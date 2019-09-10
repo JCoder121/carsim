@@ -11,9 +11,6 @@ import random
 import math
 import sys
 
-#testing note see if this can push
-#this is another test
-#hello world pushing
 
 '''
 notes:
@@ -34,7 +31,8 @@ SCREEN_WIDTH = 1430
 SCREEN_HEIGHT = 850
 BALL_SIZE = 15
 SPEED = 1
-PERSON_SPEED = 2
+#this was just changed
+PERSON_SPEED = 1.5
 MAXSPEED = 2
 ACCEL = 0.03
 RANDOMPARAM = 25
