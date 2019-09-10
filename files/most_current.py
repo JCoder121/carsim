@@ -31,7 +31,6 @@ SCREEN_WIDTH = 1430
 SCREEN_HEIGHT = 850
 BALL_SIZE = 15
 SPEED = 1
-#this was just changed
 PERSON_SPEED = 1.5
 MAXSPEED = 2
 ACCEL = 0.03
@@ -238,6 +237,8 @@ def main():
                 if event.key == pygame.K_RETURN:
                     person = make_person()
                     person_list.append(person)
+                if event.type == MOUSEBUTTONDOWN:
+                    print('hello something happened')
 
         #random car spawn
         x = random.randint(1,RANDOMPARAM)
