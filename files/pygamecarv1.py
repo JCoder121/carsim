@@ -90,7 +90,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-                
+        
             elif event.type == pygame.KEYDOWN:
                 # Space bar! Spawn a new ball.
                 if event.key == pygame.K_SPACE:
