@@ -11,6 +11,10 @@ import random
 import math
 import sys
 
+#testing note see if this can push
+#this is another test
+#hello world pushing
+
 '''
 notes:
 
@@ -154,7 +158,7 @@ def make_ball():
     """
     Function to make a new, random ball.
     """
-    ball = Ball()
+    ball = Ball()                                                                      
     # Starting position of the ball.
     ball.x = 1250
     ball.y = 700
