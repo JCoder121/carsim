@@ -35,8 +35,9 @@ PERSON_SPEED = 1.5
 MAXSPEED = 2
 ACCEL = 0.03
 RANDOMPARAM = 25
+INFRONT = 40
 #change dt for acceleration change, bigger = faster accel
-dt = 0.005
+dt = 0.008
 
 class Ball:
     """
@@ -53,6 +54,20 @@ class Ball:
         self.speed = 0
         self.y_accel = 0
         self.x_accel = 0
+    
+    def dropoff(self):
+        self.drop_bool = False
+        self.drop_chance = random.randint(1, 20)
+
+        if not drop_bool:
+            if self.drop_chance == 3:
+                #wait time
+                for x in range(0,200):
+                    self.speed = 0
+
+                #last resort drop off here
+
+                self.drop_bool = True
 
     def accelerate(self, var1):
         self.Y_ACCEL = self.y_accel*self.y_accel * dt
@@ -93,6 +108,7 @@ class Ball:
             print(var1)
             sys.exit()
 
+    '''
     def decelerate(self, var1):
         self.Y_ACCEL = self.y_accel*self.y_accel * dt
         self.X_ACCEL = self.x_accel*self.x_accel * dt
@@ -130,6 +146,7 @@ class Ball:
         else:
             print('error decelerate')
             sys.exit()
+    '''
 
 
     def reset(self):        
@@ -148,7 +165,8 @@ class Person:
         self.y = 0
         self.speed = PERSON_SPEED
         self.initial = 0
-        self.personal_value = random.randint(0,2)
+        #self.personal_value = random.randint(0,2)
+        self.personal_value = 0
 
  
 def make_ball():
@@ -225,21 +243,39 @@ def main():
     # -------- Main Program Loop -----------
     while not done:
         # --- Event Processing
+    
+        #on sublime, use below    
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 done = True
-            elif event.type == pygame.KEYDOWN:
-                #Space bar! Spawn a new ball.
+
+            if event.type == pygame.MOUSEBUTTONDOWN and ball.y<680:
+                ball = make_ball()
+                ball_list.append(ball)
+
+            if event.type == pygame.KEYDOWN:
+                person = make_person()
+                person_list.append(person)
+
+            #on IDLE, use below
+            '''
+            if event.type == pygame.QUIT:
+                done = True
+            
+            if event.type == pygame.KEYDOWN:
+                print('something')
+                #Space bar spawn a new ball.
                 #prevent rapid firing spawn
                 if event.key == pygame.K_SPACE and ball.y < 680:
+                    print('hello')
                     ball = make_ball()
                     ball_list.append(ball)
                 if event.key == pygame.K_RETURN:
                     person = make_person()
                     person_list.append(person)
-                if event.type == MOUSEBUTTONDOWN:
-                    print('hello something happened')
-
+            '''
+        
         #random car spawn
         x = random.randint(1,RANDOMPARAM)
         #check if random match and there is a ball above
@@ -247,8 +283,10 @@ def main():
             ball = make_ball()
             ball_list.append(ball)
 
+
         #random pedestrian spawn
-        another_random = random.randint(1, RANDOMPARAM + 100)
+        #another_random = random.randint(1, RANDOMPARAM + 100)
+        another_random = 3
         if (another_random == 3):
             person = make_person()
             person_list.append(person)
@@ -262,14 +300,16 @@ def main():
             accel_bool = True
             
             if ball.x < 155 and ball.y > 90:
-                
-                for infront in range(20,30):
+
+                for infront in range(20,INFRONT):
                     value3 = screen.get_at((int(ball.x), int(ball.y)+infront))  
+
+
+
                     if (value3 == RED) or (value3 == GREEN):
-                        accel_bool = False                        
+                        accel_bool = False   
                         #ball.decelerate(2)
                         ball.reset()
-                        break
 
                 if accel_bool:
                     ball.accelerate(2)
@@ -277,27 +317,25 @@ def main():
             else:
                 #see if ball is on right side, will go vertical motion up
                 if ball.y > 100:
-                    for infront in range(20, 30):
+                    for infront in range(20, INFRONT):
                         value1 = screen.get_at((int(ball.x), int(ball.y)-infront))
                         if (value1 == RED) or (value1 == GREEN):
                             accel_bool = False
                             #ball.decelerate(0)
                             ball.reset()
-                            break
-                        
+                            
                     if accel_bool:
                         ball.accelerate(0)
                     
                 #see if ball is on top side, will go horizontal motion left
                 elif ball.y < 100:
-                    for infront in range(20, 30):
+                    for infront in range(20, INFRONT):
                         value2 = screen.get_at(((int(ball.x)-infront), int(ball.y)))
                         
                         if (value2 == RED) or (value2 == GREEN):
                             accel_bool = False
                             #ball.decelerate(1)
                             ball.reset()
-                            break
 
                     if accel_bool:    
                         ball.accelerate(1)
