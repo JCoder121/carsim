@@ -34,9 +34,13 @@ MAXSPEED = 2
 ACCEL = 0.03
 RANDOMPARAM = 25
 INFRONT = 35
-WAITTIME = 200
+WAITTIME = 1000
 #change dt for acceleration change, bigger = faster accel
 dt = 0.008
+
+size = [SCREEN_WIDTH, SCREEN_HEIGHT]
+screen = pygame.display.set_mode(size)
+pygame.display.set_caption("Dropping Cars")
 
 class Ball:
     """
@@ -50,6 +54,7 @@ class Ball:
         self.drop_bool = False
         self.x_accel = 0
         self.drop_val = 100
+        self.accel_bool = True
 
     def stop(self):
         self.speed = 0
@@ -82,7 +87,39 @@ class Ball:
 
         elif drop_val == 100:
             print('something wrong')
-        
+    
+    def detect(self, detect_var):
+        #left 
+        if detect_var == 0:
+            for infront in range(20,INFRONT):
+                    value3 = screen.get_at((int(self.x), int(self.y)+infront))  
+
+                    if (value3 == RED) or (value3 == GREEN):
+                        self.accel_bool = False   
+                        #ball.decelerate(2)
+                        self.stop()
+
+        #right
+        elif detect_var == 1:
+            for infront in range(20, INFRONT):
+                        value1 = screen.get_at((int(self.x), int(self.y)-infront))
+                        if (value1 == RED) or (value1 == GREEN):
+                            self.accel_bool = False
+                            #ball.decelerate(0)
+                            self.stop()
+
+        #top
+        elif detect_var == 2:
+            for infront in range(20, INFRONT):
+                        value2 = screen.get_at(((int(self.x)-infront), int(self.y)))
+                        
+                        if (value2 == RED) or (value2 == GREEN):
+                            self.accel_bool = False
+                            #ball.decelerate(1)
+                            self.stop()
+
+        return self.accel_bool
+
 
     def accelerate(self, var1):
         self.Y_ACCEL = self.y_accel*self.y_accel * dt
@@ -162,12 +199,6 @@ class Ball:
             print('error decelerate')
             sys.exit()
     '''
-
-
-    def reset(self):        
-        self.speed = 0
-        self.y_accel = 0
-        self.x_accel = 0
     
         
 class Person:
@@ -240,7 +271,7 @@ def main():
     # Set the height and width of the screen
     size = [SCREEN_WIDTH, SCREEN_HEIGHT]
     screen = pygame.display.set_mode(size)
-    pygame.display.set_caption("Bouncing Balls")
+    pygame.display.set_caption("Dropping Cars")
  
     # Loop until the user clicks the close button.
     done = False
@@ -314,61 +345,40 @@ def main():
             #DECELERATING IS BIG KEY - STAY OR NO?
 
             #see if ball is on left side, will go vertical motion down
-            accel_bool = True
-            #drop_var = random.randint(0,1)
-            #drop_var = 0
-            #print(drop_var)
-            ball.dropoff(ball.drop_val)
+            ball.accel_bool = True
 
 
             if ball.x < 155 and ball.y > 90:
+                '''
+                if ball.drop_val == 1:
+                    ball.drop_off(drop_val)
+                '''
+                #see if ball is on left side, will go down
+                #get value above detect and use that
+                ball.detect(0)
+            
 
-                for infront in range(20,INFRONT):
-                    value3 = screen.get_at((int(ball.x), int(ball.y)+infront))  
-
-                    if (value3 == RED) or (value3 == GREEN):
-                        accel_bool = False   
-                        #ball.decelerate(2)
-                        ball.reset()
-
-                if accel_bool:
+                if ball.accel_bool:
                     ball.accelerate(2)
                 
             else:
                 #see if ball is on right side, will go vertical motion up
                 if ball.y > 100:
-                    
-
-                    for infront in range(20, INFRONT):
-                        value1 = screen.get_at((int(ball.x), int(ball.y)-infront))
-                        if (value1 == RED) or (value1 == GREEN):
-                            accel_bool = False
-                            #ball.decelerate(0)
-                            ball.reset()
+                    ball.detect(1)
                             
-                    if accel_bool:
+                    if ball.accel_bool:
                         ball.accelerate(0)
                     
                 #see if ball is on top side, will go horizontal motion left
                 elif ball.y < 100:
+                    ball.detect(2)
 
-                    for infront in range(20, INFRONT):
-                        value2 = screen.get_at(((int(ball.x)-infront), int(ball.y)))
-                        
-                        if (value2 == RED) or (value2 == GREEN):
-                            accel_bool = False
-                            #ball.decelerate(1)
-                            ball.reset()
-
-                    if accel_bool:    
+                    if ball.accel_bool:    
                         ball.accelerate(1)
-
-            #drop_bool = False
         
             #get rid of ball if it crosses 
             if ball.y >(SCREEN_HEIGHT - 50) and ball.x<(200):
                 del ball_list[0]
-
 
 
         #pedestrian crossing
@@ -414,6 +424,7 @@ def main():
 
             else:
                 pygame.draw.circle(screen, RED, [int(ball.x), int(ball.y)], BALL_SIZE)
+
         
 
         for person in person_list:
