@@ -14,10 +14,7 @@ import sys
 
 '''
 notes:
-
-person and ball class for the cars
-with single speed system, cars no longer slow down and re-accelerate
-on corners (this is more representative)
+do wait time later, see if can implement it
 '''
 
 # Define some colors
@@ -26,6 +23,7 @@ WHITE = (255, 255, 255)
 GREEN = (0,255,0)
 RED = (255,0,0)
 BLUE = (0,0,255)
+YELLOW = (255, 255, 0)
  
 SCREEN_WIDTH = 1430
 SCREEN_HEIGHT = 850
@@ -35,7 +33,8 @@ PERSON_SPEED = 1.5
 MAXSPEED = 2
 ACCEL = 0.03
 RANDOMPARAM = 25
-INFRONT = 40
+INFRONT = 35
+WAITTIME = 200
 #change dt for acceleration change, bigger = faster accel
 dt = 0.008
 
@@ -48,26 +47,42 @@ class Ball:
         self.y = 0
         self.speed = 0
         self.y_accel = 0
+        self.drop_bool = False
         self.x_accel = 0
+        self.drop_val = 100
 
     def stop(self):
         self.speed = 0
         self.y_accel = 0
         self.x_accel = 0
     
-    def dropoff(self):
-        self.drop_bool = False
-        self.drop_chance = random.randint(1, 20)
+    
+    def dropoff(self, drop_val):
+        #drop off from top
 
-        if not drop_bool:
-            if self.drop_chance == 3:
-                #wait time
-                for x in range(0,200):
-                    self.speed = 0
+        if drop_val == 0:
+            self.drop_bool = True
+            #this means that its stopping at top to drop off
+            drop_x = random.randint(150, 800)
+            if self.x == drop_x and self.y < 300:
+                for x in range(0, WAITTIME):
+                    self.reset()
+                print('dropped off 1')
+            self.drop_bool = False
 
-                #last resort drop off here
+        elif drop_val == 1:
+            self.drop_bool = True
+            #this means that its stopping at left side going down to d.o.
+            drop_y = random.randint(125, 600)
+            if self.y == drop_y and self.x < 200:
+                for x in range(0, WAITTIME):
+                    self.reset()
+                print('dropped off 2')
+            self.drop_bool = False
 
-                self.drop_bool = True
+        elif drop_val == 100:
+            print('something wrong')
+        
 
     def accelerate(self, var1):
         self.Y_ACCEL = self.y_accel*self.y_accel * dt
@@ -178,6 +193,7 @@ def make_ball():
     ball.x = 1250
     ball.y = 700
     ball.speed = SPEED
+    ball.drop_val = random.randint(0,1)
     return ball
 
 def make_person():
@@ -285,26 +301,30 @@ def main():
 
 
         #random pedestrian spawn
-        #another_random = random.randint(1, RANDOMPARAM + 100)
-        another_random = 3
+        another_random = random.randint(1, RANDOMPARAM + 100)
+        #another_random = 3
         if (another_random == 3):
             person = make_person()
             person_list.append(person)
  
         # --- Logic
         for ball in ball_list:
+
             #Move the ball's center, check for position to move ball where
             #DECELERATING IS BIG KEY - STAY OR NO?
 
             #see if ball is on left side, will go vertical motion down
             accel_bool = True
-            
+            #drop_var = random.randint(0,1)
+            #drop_var = 0
+            #print(drop_var)
+            ball.dropoff(ball.drop_val)
+
+
             if ball.x < 155 and ball.y > 90:
 
                 for infront in range(20,INFRONT):
                     value3 = screen.get_at((int(ball.x), int(ball.y)+infront))  
-
-
 
                     if (value3 == RED) or (value3 == GREEN):
                         accel_bool = False   
@@ -317,6 +337,8 @@ def main():
             else:
                 #see if ball is on right side, will go vertical motion up
                 if ball.y > 100:
+                    
+
                     for infront in range(20, INFRONT):
                         value1 = screen.get_at((int(ball.x), int(ball.y)-infront))
                         if (value1 == RED) or (value1 == GREEN):
@@ -329,6 +351,7 @@ def main():
                     
                 #see if ball is on top side, will go horizontal motion left
                 elif ball.y < 100:
+
                     for infront in range(20, INFRONT):
                         value2 = screen.get_at(((int(ball.x)-infront), int(ball.y)))
                         
@@ -339,10 +362,13 @@ def main():
 
                     if accel_bool:    
                         ball.accelerate(1)
+
+            #drop_bool = False
         
             #get rid of ball if it crosses 
             if ball.y >(SCREEN_HEIGHT - 50) and ball.x<(200):
                 del ball_list[0]
+
 
 
         #pedestrian crossing
@@ -381,8 +407,14 @@ def main():
         pygame.draw.rect(screen, BLACK, (100, 50, 100, 700))
         
         # draw everything
+        
         for ball in ball_list:
-            pygame.draw.circle(screen, RED, [int(ball.x), int(ball.y)], BALL_SIZE)
+            if ball.drop_bool == True:
+                pygame.draw.circle(screen, YELLOW, [int(ball.x), int(ball.y)], BALL_SIZE)
+
+            else:
+                pygame.draw.circle(screen, RED, [int(ball.x), int(ball.y)], BALL_SIZE)
+        
 
         for person in person_list:
             pygame.draw.circle(screen, GREEN, [int(person.x), int(person.y)], 7)
