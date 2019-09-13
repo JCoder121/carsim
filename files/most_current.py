@@ -34,6 +34,7 @@ MAXSPEED = 2
 ACCEL = 0.03
 RANDOMPARAM = 25
 INFRONT = 35
+SWEEP = 20
 WAITTIME = 1000
 #change dt for acceleration change, bigger = faster accel
 dt = 0.008
@@ -91,32 +92,37 @@ class Ball:
     def detect(self, detect_var):
         #left 
         if detect_var == 0:
-            for infront in range(20,INFRONT):
-                    value3 = screen.get_at((int(self.x), int(self.y)+infront))  
+            for sweep in range(-SWEEP, SWEEP):
+                for infront in range(20,INFRONT):
+                        value3 = screen.get_at((int(self.x)+sweep, int(self.y)+infront))  
 
-                    if (value3 == RED) or (value3 == GREEN):
-                        self.accel_bool = False   
-                        #ball.decelerate(2)
-                        self.stop()
+                        if (value3 == RED) or (value3 == GREEN):
+                            self.accel_bool = False   
+                            #ball.decelerate(2)
+                            self.stop()
 
         #right
         elif detect_var == 1:
-            for infront in range(20, INFRONT):
-                        value1 = screen.get_at((int(self.x), int(self.y)-infront))
-                        if (value1 == RED) or (value1 == GREEN):
-                            self.accel_bool = False
-                            #ball.decelerate(0)
-                            self.stop()
+            for sweep in range(-SWEEP, SWEEP):
+                for infront in range(20, INFRONT):
+                            value1 = screen.get_at((int(self.x)+sweep, int(self.y)-infront))
+                            if (value1 == RED) or (value1 == GREEN):
+                                self.accel_bool = False
+
+                                self.stop()
 
         #top
         elif detect_var == 2:
-            for infront in range(20, INFRONT):
-                        value2 = screen.get_at(((int(self.x)-infront), int(self.y)))
-                        
-                        if (value2 == RED) or (value2 == GREEN):
-                            self.accel_bool = False
-                            #ball.decelerate(1)
-                            self.stop()
+            #sweep allows for it to be a rectangle object detection
+            
+                for infront in range(20, INFRONT):
+                    for sweep in range(-SWEEP, SWEEP):
+                            value2 = screen.get_at(((int(self.x)-infront), int(self.y) + sweep))
+                            
+                            if (value2 == RED) or (value2 == GREEN):
+                                self.accel_bool = False
+                                #ball.decelerate(1)
+                                self.stop()
 
         return self.accel_bool
 
@@ -324,11 +330,13 @@ def main():
             '''
         
         #random car spawn
+        '''
         x = random.randint(1,RANDOMPARAM)
         #check if random match and there is a ball above
         if (x==3) and (ball.y < 680):
             ball = make_ball()
             ball_list.append(ball)
+        '''
 
 
         #random pedestrian spawn
@@ -349,14 +357,10 @@ def main():
 
 
             if ball.x < 155 and ball.y > 90:
-                '''
-                if ball.drop_val == 1:
-                    ball.drop_off(drop_val)
-                '''
+                
                 #see if ball is on left side, will go down
-                #get value above detect and use that
+
                 ball.detect(0)
-            
 
                 if ball.accel_bool:
                     ball.accelerate(2)
@@ -425,7 +429,6 @@ def main():
             else:
                 pygame.draw.circle(screen, RED, [int(ball.x), int(ball.y)], BALL_SIZE)
 
-        
 
         for person in person_list:
             pygame.draw.circle(screen, GREEN, [int(person.x), int(person.y)], 7)
