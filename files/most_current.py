@@ -57,9 +57,6 @@ class Ball:
         self.x_accel = 0
         self.color = RED
 
-
-        self.reference_var = 9000
-
         #self.drop_val = 0
         self.drop_val = random.randint(0,1)
 
@@ -80,15 +77,9 @@ class Ball:
         self.y_accel = 0
         self.x_accel = 0
         if the_drop_bool == True:
-            self.color = YELLOW
+            self.color = YELLOW        
 
-    def stop_detect(self):
-        self.speed = 0
-        self.y_accel = 0
-        self.x_accel = 0
-        
-    
-    
+
     def detect(self, detect_var):
         #left 
         if detect_var == 0:
@@ -210,6 +201,7 @@ class Ball:
             sys.exit()
     '''
     
+    '''
     def dropoff(self, drop_val):
         #drop off from top
 
@@ -242,6 +234,7 @@ class Ball:
             self.is_dropped = False
 
         return self.is_dropped
+        '''
 
 
         
@@ -417,7 +410,7 @@ def main():
                         #print('yellow')
 
                     ball.is_dropped = False
-                    ball.reference_var = 1
+
 
 
                 if not ball.is_dropped:
@@ -426,7 +419,7 @@ def main():
                     if ball.accel_bool:
                         ball.accelerate(2)
 
-                    ball.reference_var = 0
+
 
                 '''
                 if ball.drop_val == 1:
@@ -501,7 +494,7 @@ def main():
             elif person.personal_value == 1:
 
                 for y in range(10,20):
-                    person_infront = screen.get_at(((int(person.x)), int(person.y) -y))
+                    person_infront = screen.get_at(((int(person.x)), int(person.y) +y))
                     if person_infront == RED or person_infront == GREEN:
                         person.stop()
                         person_bool = False
@@ -545,7 +538,7 @@ def main():
         
         for ball in ball_list:
             #if ball.is_dropped == True:
-            #if ball.reference_var == 1:
+
 
             pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
 
@@ -554,7 +547,7 @@ def main():
                 pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
 
             else:
-                #print(ball.reference_var)
+
                 pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
             '''
 
