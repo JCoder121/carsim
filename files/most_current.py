@@ -220,11 +220,7 @@ def make_person():
 
     return person
  
-def distance(a,b):
-    '''
-    This function will find the distance between any two balls
-    '''
-    return math.sqrt((a.y - b.y)**2 + (a.x - a.y)**2)
+
  
 def main():
     '''
@@ -295,8 +291,6 @@ def main():
             ball = make_ball()
             ball_list.append(ball)
         '''
-
-
 
         #random pedestrian spawn
         another_random = random.randint(1, RANDOMPARAM + 100)

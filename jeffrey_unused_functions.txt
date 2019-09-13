@@ -79,4 +79,13 @@ unused car functions pasted here:
 
         return self.is_dropped
 '''
+
+'''
+	def distance(a,b):
+	    '''
+	    This function will find the distance between any two balls
+	    '''
+	    return math.sqrt((a.y - b.y)**2 + (a.x - a.y)**2)
+
+'''
    
