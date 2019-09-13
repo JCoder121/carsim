@@ -38,7 +38,7 @@ ACCEL = 0.03
 RANDOMPARAM = 25
 INFRONT = 35
 SWEEP = 20
-WAITTIME = 300000
+WAITTIME = 30000
 #change dt for acceleration change, bigger = faster accel
 dt = 0.008
 
@@ -57,17 +57,19 @@ class Ball:
         self.y_accel = 0
         self.x_accel = 0
         self.drop_val = 0
+        self.reference_var = 9000
         #self.drop_val = random.randint(0,1)
 
-        self.drop_bool = True
+        
         if self.drop_val == 0:
             self.drop_x = random.randint(77, 400) * 2
 
         elif self.drop_val == 1:
             self.drop_y = random.randint(62, 300) * 2
 
+        self.drop_bool = True
         self.accel_bool = True
-        self.is_stopped = False
+        self.is_dropped = False
 
 
     def stop(self):
@@ -205,46 +207,30 @@ class Ball:
         if self.drop_bool == True:
 
             if drop_val == 0:
+
                 #this means that its stopping at top to drop off
-                
 
                 if self.x == self.drop_x and self.y <300:
                     self.drop_bool = False
-                    self.is_stopped = True
-
-                    #for x in range(0, WAITTIME):
-                    amazing = 0
-                    while amazing < WAITTIME:
-                        print('SOMETHINGWRONG')
-                        self.stop()
-                        amazing +=1
-
-                    print('dropped off 0')
+                    self.is_dropped = True
 
 
             elif drop_val == 1:
 
                 #this means that its stopping at left side going down to d.o.
                 
-                #print('recognized 1')
-
 
                 if self.y == self.drop_y and self.x < 600:
                     self.drop_bool = False
-                    self.is_stopped = True
-
-                    for x in range(0, WAITTIME):
-                        self.stop()
-                    print('dropped off 1')
-
+                    self.is_dropped = True
 
             elif drop_val == 100:
                 print('something wrong')
 
         else:
-            self.is_stopped = False
+            self.drop_bool = False
 
-        return self.is_stopped
+        return self.is_dropped
 
 
         
@@ -394,8 +380,10 @@ def main():
         # --- Logic
         for ball in ball_list:
 
-            print(ball.drop_x)
-            print(ball.x)
+            #print(ball.drop_x)
+            #print(ball.x)
+            #print(ball.drop_x == ball.x)
+
 
             #Move the ball's center, check for position to move ball where
             #DECELERATING IS BIG KEY - STAY OR NO?
@@ -408,15 +396,22 @@ def main():
                 
                 #see if ball is on left side, will go down
 
-                if ball.drop_val == 0:
-                    ball.dropoff(ball.drop_val)
+                
+                ball.dropoff(ball.drop_val)
+                if ball.is_dropped == True:
+                    print('yeeteth')
+                    for x in range(0, WAITTIME):
+                        ball.stop()
+                    ball.is_dropped = False
+                    ball.reference_var = 1
 
-                if not ball.is_stopped:
 
+                if not ball.is_dropped:
                     ball.detect(0)
-
                     if ball.accel_bool:
                         ball.accelerate(2)
+
+                    ball.reference_var = 0
                 
                 
             else:
@@ -427,16 +422,30 @@ def main():
                             
                     if ball.accel_bool:
                         ball.accelerate(0)
+
+                    #print('going')
                     
                 #see if ball is on top side, will go horizontal motion left
                 elif ball.y < 100:
                     
-                    ball.detect(2)
-
-                    if ball.accel_bool:    
-                        ball.accelerate(1)
-
+                    #if ball.drop_val == 1:
                     ball.dropoff(ball.drop_val)
+                    if ball.is_dropped == True:
+                        print('hteteey')
+                        for x in range(0, WAITTIME):
+                            ball.stop()
+                        ball.is_dropped = False
+                        ball.reference_var = 1
+
+                    if not ball.is_dropped:
+                        ball.detect(2)
+
+                        if ball.accel_bool:    
+                            ball.accelerate(1)
+
+                        ball.reference_var = 0
+
+
         
             #get rid of ball if it crosses 
             if ball.y >(SCREEN_HEIGHT - 50) and ball.x<(200):
@@ -508,10 +517,12 @@ def main():
         # draw everything
         
         for ball in ball_list:
-            if ball.is_stopped == True:
+            #if ball.is_dropped == True:
+            if ball.reference_var == 1:
                 pygame.draw.circle(screen, YELLOW, [int(ball.x), int(ball.y)], BALL_SIZE)
 
             else:
+                print(ball.reference_var)
                 pygame.draw.circle(screen, RED, [int(ball.x), int(ball.y)], BALL_SIZE)
 
 
