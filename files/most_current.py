@@ -57,9 +57,8 @@ class Ball:
         self.x_accel = 0
         self.color = RED
 
-        #self.drop_val = 0
+        #self.drop_val = 1
         self.drop_val = random.randint(0,1)
-
         
         if self.drop_val == 0:
             self.drop_x = random.randint(77, 400) * 2
@@ -365,12 +364,13 @@ def main():
             '''
         
         #random car spawn
-        
+        '''
         x = random.randint(1,RANDOMPARAM)
         #check if random match and there is a ball above
         if (x==3) and (ball.y < 680):
             ball = make_ball()
             ball_list.append(ball)
+        '''
 
 
 
@@ -422,15 +422,18 @@ def main():
 
 
                 '''
+
+                print(ball.y, ball.drop_y)
+                ball.detect(0)
+
                 if ball.drop_val == 1:
-                    if ball.y == ball.drop_y:
+                    if int(ball.y) == ball.drop_y:
                         for y in range(0, WAITTIME):
-                            ball.drop(True)
+                            ball.stop(True)
 
                         ball.y +=2
 
-                ball.detect(0)
-
+                
                 if ball.accel_bool:
                     ball.accelerate(2)
                 
@@ -452,15 +455,15 @@ def main():
                     #print(ball.x, ball.drop_x)
 
                     #my own ghetto drop off function
+                    ball.detect(2)  
+
                     if ball.drop_val == 0:
 
-                        if ball.x == ball.drop_x:
+                        if int(ball.x) == ball.drop_x:
                             for x in range(0, WAITTIME):
                                 ball.stop(True)
                             
                             ball.x += 2
-
-                    ball.detect(2)
 
                     if ball.accel_bool:
                         ball.accelerate(1)
