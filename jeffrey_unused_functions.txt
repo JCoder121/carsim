@@ -88,4 +88,50 @@ unused car functions pasted here:
 	    return math.sqrt((a.y - b.y)**2 + (a.x - a.y)**2)
 
 '''
+
+'''
+
+    def person_detect(self, variable):
+        
+        #right leg detection
+        person_bool = True
+
+        if variable == 0:
+            for person_sweep in range(-8, 8):
+                for x in range(10, 20):
+                    person_infront = screen.get_at(((int(self.x)-x), int(self.y) + person_sweep))
+                    if person_infront == RED or person_infront == GREEN:
+                        self.stop()
+                        person_bool = False
+                        return person_bool
+
+                #if person_bool:
+                #    self.x -= PERSON_SPEED
+
+        #top leg detection
+        elif variable == 1:
+            for person_sweep in range(-8, 8):
+                for y in range(10,20):
+                    person_infront = screen.get_at(((int(self.x)), int(self.y) +y))
+                    if person_infront == RED or person_infront == GREEN:
+                        self.stop()
+                        person_bool = False
+                        return person_bool
+
+                #if person_bool:
+                #    self.y += PERSON_SPEED
+
+        #left leg detection
+        elif variable == 2:
+            for person_sweep in range(-8, 8):
+                for x in range(10,20):
+                    person_infront = screen.get_at((int(self.x)+x, int(self.y)))
+                    if person_infront == RED or person_infront == GREEN:
+                        self.stop()
+                        person_bool = False
+                        return person_bool
+
+                #if person_bool:
+                #    self.x += PERSON_SPEED
+'''
    
