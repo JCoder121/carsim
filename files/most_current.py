@@ -15,8 +15,7 @@ import sys
 
 '''
 notes:
-make sure that when cars are dropping off only, not stopped for pedestrians
-that they are changing colors
+YELLOW CARS = HAVE DROPPED OFF
 NEED A METHOD TO WAIT
 '''
 
@@ -48,7 +47,7 @@ pygame.display.set_caption("Dropping Cars")
 
 class Ball:
     """
-    Class to keep track of a ball's location and vector.
+    Class to keep track of a ball's location and speed
     """
     def __init__(self):
         self.x = 0
@@ -56,9 +55,13 @@ class Ball:
         self.speed = 0
         self.y_accel = 0
         self.x_accel = 0
-        self.drop_val = 0
+        self.color = RED
+
+
         self.reference_var = 9000
-        #self.drop_val = random.randint(0,1)
+
+        #self.drop_val = 0
+        self.drop_val = random.randint(0,1)
 
         
         if self.drop_val == 0:
@@ -72,7 +75,14 @@ class Ball:
         self.is_dropped = False
 
 
-    def stop(self):
+    def stop(self, the_drop_bool):
+        self.speed = 0
+        self.y_accel = 0
+        self.x_accel = 0
+        if the_drop_bool == True:
+            self.color = YELLOW
+
+    def stop_detect(self):
         self.speed = 0
         self.y_accel = 0
         self.x_accel = 0
@@ -89,7 +99,7 @@ class Ball:
                     if (value3 == RED) or (value3 == GREEN):
                         self.accel_bool = False   
                         #ball.decelerate(2)
-                        self.stop()
+                        self.stop(False)
 
         #right
         elif detect_var == 1:
@@ -99,7 +109,7 @@ class Ball:
                     if (value1 == RED) or (value1 == GREEN):
                         self.accel_bool = False
 
-                        self.stop()
+                        self.stop(False)
 
         #top
         elif detect_var == 2:
@@ -112,7 +122,7 @@ class Ball:
                     if (value2 == RED) or (value2 == GREEN):
                         self.accel_bool = False
                         #ball.decelerate(1)
-                        self.stop()
+                        self.stop(False)
 
         return self.accel_bool
 
@@ -229,6 +239,7 @@ class Ball:
 
         else:
             self.drop_bool = False
+            self.is_dropped = False
 
         return self.is_dropped
 
@@ -361,13 +372,13 @@ def main():
             '''
         
         #random car spawn
-        '''
+        
         x = random.randint(1,RANDOMPARAM)
         #check if random match and there is a ball above
         if (x==3) and (ball.y < 680):
             ball = make_ball()
             ball_list.append(ball)
-        '''
+
 
 
         #random pedestrian spawn
@@ -395,24 +406,40 @@ def main():
             if ball.x < 155 and ball.y > 90:
                 
                 #see if ball is on left side, will go down
-
+                '''
                 
                 ball.dropoff(ball.drop_val)
                 if ball.is_dropped == True:
                     print('yeeteth')
                     for x in range(0, WAITTIME):
-                        ball.stop()
+                        ball.stop_drop()
+                        ball.color = YELLOW
+                        #print('yellow')
+
                     ball.is_dropped = False
                     ball.reference_var = 1
 
 
                 if not ball.is_dropped:
+                    ball.color = RED
                     ball.detect(0)
                     if ball.accel_bool:
                         ball.accelerate(2)
 
                     ball.reference_var = 0
-                
+
+                '''
+                if ball.drop_val == 1:
+                    if ball.y == ball.drop_y:
+                        for y in range(0, WAITTIME):
+                            ball.drop(True)
+
+                        ball.y +=2
+
+                ball.detect(0)
+
+                if ball.accel_bool:
+                    ball.accelerate(2)
                 
             else:
                 #see if ball is on right side, will go vertical motion up
@@ -429,21 +456,21 @@ def main():
                 elif ball.y < 100:
                     
                     #if ball.drop_val == 1:
-                    ball.dropoff(ball.drop_val)
-                    if ball.is_dropped == True:
-                        print('hteteey')
-                        for x in range(0, WAITTIME):
-                            ball.stop()
-                        ball.is_dropped = False
-                        ball.reference_var = 1
+                    #print(ball.x, ball.drop_x)
 
-                    if not ball.is_dropped:
-                        ball.detect(2)
+                    #my own ghetto drop off function
+                    if ball.drop_val == 0:
 
-                        if ball.accel_bool:    
-                            ball.accelerate(1)
+                        if ball.x == ball.drop_x:
+                            for x in range(0, WAITTIME):
+                                ball.stop(True)
+                            
+                            ball.x += 2
 
-                        ball.reference_var = 0
+                    ball.detect(2)
+
+                    if ball.accel_bool:
+                        ball.accelerate(1)
 
 
         
@@ -518,12 +545,18 @@ def main():
         
         for ball in ball_list:
             #if ball.is_dropped == True:
-            if ball.reference_var == 1:
-                pygame.draw.circle(screen, YELLOW, [int(ball.x), int(ball.y)], BALL_SIZE)
+            #if ball.reference_var == 1:
+
+            pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
+
+            '''
+            if ball.accel_bool == True:
+                pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
 
             else:
-                print(ball.reference_var)
-                pygame.draw.circle(screen, RED, [int(ball.x), int(ball.y)], BALL_SIZE)
+                #print(ball.reference_var)
+                pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
+            '''
 
 
         for person in person_list:
