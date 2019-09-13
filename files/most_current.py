@@ -1,22 +1,16 @@
-#updated section 9/12/19 2:25PM
+#updated section 9/13/19 1:05PM
 #anichau and jeffchen
 
-#working version
 #decelerating is still a question
-#can move on to simulating the actual passenger drop off
-#remember on drop off to associate a boolean
-#if dropped off already, can't do it again
 
 import pygame
 import random
 import math
 import sys
 
-
 '''
 notes:
 YELLOW CARS = HAVE DROPPED OFF
-NEED A METHOD TO WAIT
 '''
 
 # Define some colors
@@ -26,7 +20,8 @@ GREEN = (0,255,0)
 RED = (255,0,0)
 BLUE = (0,0,255)
 YELLOW = (255, 255, 0)
- 
+
+#define other variables 
 SCREEN_WIDTH = 1430
 SCREEN_HEIGHT = 850
 BALL_SIZE = 15
@@ -177,6 +172,9 @@ class Person:
     def stop(self):
         self.speed = 0
 
+    #def person_detect(self, variable):
+
+
  
 def make_ball():
     """
@@ -187,7 +185,6 @@ def make_ball():
     ball.x = 1250
     ball.y = 700
     ball.speed = SPEED
-    #ball.drop_val = random.randint(0,1)
 
     return ball
 
@@ -251,9 +248,10 @@ def main():
     while not done:
         # --- Event Processing
     
-        #on sublime, use below    
+        
         for event in pygame.event.get():
 
+            #on sublime, use below    
             if event.type == pygame.QUIT:
                 done = True
 
@@ -293,9 +291,9 @@ def main():
         '''
 
         #random pedestrian spawn
-        another_random = random.randint(1, RANDOMPARAM + 100)
-        #another_random = 3
-        if (another_random == 3):
+        random_ped = random.randint(1, RANDOMPARAM + 100)
+        #random_ped = 3
+        if (random_ped == 3):
             person = make_person()
             person_list.append(person)
  
@@ -306,41 +304,15 @@ def main():
             #print(ball.x)
             #print(ball.drop_x == ball.x)
 
-
             #Move the ball's center, check for position to move ball where
             #DECELERATING IS BIG KEY - STAY OR NO?
 
             #see if ball is on left side, will go vertical motion down
             ball.accel_bool = True
 
-
             if ball.x < 155 and ball.y > 90:
-                
+            
                 #see if ball is on left side, will go down
-                '''
-                
-                ball.dropoff(ball.drop_val)
-                if ball.is_dropped == True:
-                    print('yeeteth')
-                    for x in range(0, WAITTIME):
-                        ball.stop_drop()
-                        ball.color = YELLOW
-                        #print('yellow')
-
-                    ball.is_dropped = False
-
-
-
-                if not ball.is_dropped:
-                    ball.color = RED
-                    ball.detect(0)
-                    if ball.accel_bool:
-                        ball.accelerate(2)
-
-
-
-                '''
-
                 print(ball.y, ball.drop_y)
                 ball.detect(0)
 
@@ -350,7 +322,6 @@ def main():
                             ball.stop(True)
 
                         ball.y +=2
-
                 
                 if ball.accel_bool:
                     ball.accelerate(2)
@@ -360,34 +331,25 @@ def main():
                 if ball.y > 100:
 
                     ball.detect(1)
-                            
                     if ball.accel_bool:
                         ball.accelerate(0)
-
-                    #print('going')
                     
                 #see if ball is on top side, will go horizontal motion left
                 elif ball.y < 100:
                     
                     #if ball.drop_val == 1:
                     #print(ball.x, ball.drop_x)
-
                     #my own ghetto drop off function
                     ball.detect(2)  
-
                     if ball.drop_val == 0:
-
                         if int(ball.x) == ball.drop_x:
                             for x in range(0, WAITTIME):
                                 ball.stop(True)
-                            
                             ball.x += 2
 
                     if ball.accel_bool:
                         ball.accelerate(1)
 
-
-        
             #get rid of ball if it crosses 
             if ball.y >(SCREEN_HEIGHT - 50) and ball.x<(200):
                 del ball_list[0]
@@ -401,7 +363,8 @@ def main():
             if person.personal_value == 0:
                 
                 #simple obj detection:
-                
+                #see if can make obj detection function
+
                 for x in range(10, 20):
                     person_infront = screen.get_at(((int(person.x)-x), int(person.y)))
                     if person_infront == RED or person_infront == GREEN:
@@ -458,20 +421,8 @@ def main():
         # draw everything
         
         for ball in ball_list:
-            #if ball.is_dropped == True:
-
 
             pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
-
-            '''
-            if ball.accel_bool == True:
-                pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
-
-            else:
-
-                pygame.draw.circle(screen, ball.color, [int(ball.x), int(ball.y)], BALL_SIZE)
-            '''
-
 
         for person in person_list:
             pygame.draw.circle(screen, GREEN, [int(person.x), int(person.y)], 7)
