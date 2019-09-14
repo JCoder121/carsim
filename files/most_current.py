@@ -32,9 +32,9 @@ ACCEL = 0.03
 RANDOMPARAM = 25
 INFRONT = 35
 SWEEP = 20
-WAITTIME = 3000
+WAITTIME = 10000
 #change dt for acceleration change, bigger = faster accel
-dt = 0.008
+dt = 0.004
 
 size = [SCREEN_WIDTH, SCREEN_HEIGHT]
 screen = pygame.display.set_mode(size)
@@ -52,14 +52,9 @@ class Ball:
         self.x_accel = 0
         self.color = RED
 
-        #self.drop_val = 1
-        self.drop_val = random.randint(0,1)
-        
-        if self.drop_val == 0:
-            self.drop_x = random.randint(77, 400) * 2
-
-        elif self.drop_val == 1:
-            self.drop_y = random.randint(62, 300) * 2
+        self.drop_val = -1
+        self.drop_x = 0
+        self.drop_y = 0
 
         self.drop_bool = True
         self.accel_bool = True
@@ -81,20 +76,22 @@ class Ball:
                 for infront in range(20,INFRONT):
                     value3 = screen.get_at((int(self.x)+sweep, int(self.y)+infront))  
 
-                    if (value3 == RED) or (value3 == GREEN):
+                    if (value3 == RED) or (value3 == GREEN) or (value3 == YELLOW):
                         self.accel_bool = False   
                         #ball.decelerate(2)
                         self.stop(False)
+                        return self.accel_bool
+
 
         #right
         elif detect_var == 1:
             for sweep in range(-SWEEP, SWEEP):
                 for infront in range(20, INFRONT):
                     value1 = screen.get_at((int(self.x)+sweep, int(self.y)-infront))
-                    if (value1 == RED) or (value1 == GREEN):
+                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
                         self.accel_bool = False
-
                         self.stop(False)
+                        return self.accel_bool
 
         #top
         elif detect_var == 2:
@@ -104,12 +101,13 @@ class Ball:
                 for infront in range(20, INFRONT):    
                     value2 = screen.get_at(((int(self.x)-infront), int(self.y) + sweep))
                     
-                    if (value2 == RED) or (value2 == GREEN):
+                    if (value2 == RED) or (value2 == GREEN) or (value2 == YELLOW):
                         self.accel_bool = False
                         #ball.decelerate(1)
                         self.stop(False)
+                        return self.accel_bool
 
-        return self.accel_bool
+        #return self.accel_bool
 
 
     def accelerate(self, var1):
@@ -210,7 +208,17 @@ def make_ball():
     # Starting position of the ball.
     ball.x = 1250
     ball.y = 700
-    ball.speed = SPEED
+    #ball.speed = 0.25
+    ball.speed = SPEED 
+
+    ball.drop_val = 1
+    #drop_val = random.randint(0,1)
+
+    if ball.drop_val == 0:
+        ball.drop_x = random.randnint(77, 400) * 2
+
+    elif ball.drop_val == 1:
+        ball.drop_y = random.randint(62, 300) *2
 
     return ball
 
@@ -281,7 +289,7 @@ def main():
             if event.type == pygame.QUIT:
                 done = True
 
-            if event.type == pygame.MOUSEBUTTONDOWN and ball.y<680:
+            if event.type == pygame.MOUSEBUTTONDOWN and ball.y<660:
                 ball = make_ball()
                 ball_list.append(ball)
 
@@ -311,9 +319,10 @@ def main():
         
         x = random.randint(1,RANDOMPARAM)
         #check if random match and there is a ball above
-        if (x==3) and (ball.y < 680):
+        if (x==3) and (ball.y < 680) and len(ball_list) < 4:
             ball = make_ball()
             ball_list.append(ball)
+        
         
 
         #random pedestrian spawn
@@ -328,6 +337,7 @@ def main():
 
             #print(ball.drop_x)
             #print(ball.x)
+            #print(ball.drop_y, ball.y)
             #print(ball.drop_x == ball.x)
 
             #Move the ball's center, check for position to move ball where
@@ -340,34 +350,41 @@ def main():
             
                 #see if ball is on left side, will go down
                 #print(ball.y, ball.drop_y)
-                ball.detect(0)
 
                 if ball.drop_val == 1:
-                    if int(ball.y) == ball.drop_y:
-                        for y in range(0, WAITTIME):
-                            ball.stop(True)
+                    #print('dropped(ball)')
+                        if int(ball.y) == ball.drop_y:
+                            for y in range(0, WAITTIME):
+                                ball.stop(True)
 
-                        ball.y +=2
-                
+                            ball.y +=2
+
+
+                ball.detect(0)
+
+
                 if ball.accel_bool:
                     ball.accelerate(2)
+
                 
             elif ball.x > 155 and ball.y < 100:
+
                 #see if ball is on top side, will go horizontal motion left
                 #if ball.drop_val == 1:
                 #print(ball.x, ball.drop_x)
                 #my own ghetto drop off function
                 ball.detect(2) 
 
-                if ball.drop_val == 0:
-                    if int(ball.x) == ball.drop_x:
+                if ball.accel_bool:
+                    if ball.drop_val == 0 and int(ball.x) == ball.drop_x:
+                    #if int(ball.x) == ball.drop_x:
                         for x in range(0, WAITTIME):
                             ball.stop(True)
                         ball.x += 2
 
-                if ball.accel_bool:
                     ball.accelerate(1)
-           
+
+
             #see if ball is on right side, will go vertical motion up
             elif ball.x > 155 and ball.y > 100:
 
@@ -390,50 +407,50 @@ def main():
                 #simple obj detection:
                 #see if can make obj detection function
                 
-                for x in range(10, 20):
-                    person_infront = screen.get_at(((int(person.x)-x), int(person.y)))
-                    if person_infront == RED or person_infront == GREEN:
-                        person.stop()
-                        person_bool = False
+                #coming from right
+                for person_sweep in range(-8, 8):
+                    for x in range(10, 20):
+
+                        person_infront = screen.get_at(((int(person.x)-x), int(person.y) + person_sweep))
+                        if person_infront == RED or person_infront == GREEN:
+                            person.stop()
+                            person_bool = False
 
                 if person_bool:
                     person.x -= PERSON_SPEED
 
             #person coming from top
             elif person.personal_value == 1:
-
-                for y in range(10,20):
-                    person_infront = screen.get_at(((int(person.x)), int(person.y) +y))
-                    if person_infront == RED or person_infront == GREEN:
-                        person.stop()
-                        person_bool = False
+                for person_sweep in range(-8, 8):
+                    for y in range(10,20):
+                        person_infront = screen.get_at(((int(person.x) + person_sweep), int(person.y) +y))
+                        if person_infront == RED or person_infront == GREEN:
+                            person.stop()
+                            person_bool = False
 
                 if person_bool:
                     person.y += PERSON_SPEED
 
             #person coming from left leg
             elif person.personal_value == 2:
-                for x in range(10,20):
-                    person_infront = screen.get_at((int(person.x)+x, int(person.y)))
-                    if person_infront == RED or person_infront == GREEN:
-                        person.stop()
-                        person_bool = False
+                for person_sweep in range(-8, 8):
+                    for x in range(10,20):
+                        person_infront = screen.get_at((int(person.x)+x, int(person.y)+person_sweep))
+                        if person_infront == RED or person_infront == GREEN:
+                            person.stop()
+                            person_bool = False
 
                 if person_bool:
                     person.x += PERSON_SPEED
             
-            else:
-                print('error personlist')
-                sys.exit()
 
-
-            #always check if person has walked 200 pixels, then erase
+            #always check if person has walked 225 pixels, then erase
             if((person.personal_value == 0 or person.personal_value== 2)
-               and (abs(person.initial - person.x) > 200)):
+               and (abs(person.initial - person.x) > 225)):
                 del(person_list[0])
 
             elif((person.personal_value == 1)
-                 and abs(person.initial - person.y) > 200):
+                 and abs(person.initial - person.y) > 225):
                 del(person_list[0])
 
         # --- Drawing
