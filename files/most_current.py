@@ -1,59 +1,110 @@
-#updated section 9/9/19 7:17PM
+#updated section 9/15/19 4:05PM
 #anichau and jeffchen
 
-#working version
 #decelerating is still a question
-#can move on to simulating the actual passenger drop off
-#remember on drop off to associate a boolean
-#if dropped off already, can't do it again
+
 import pygame
 import random
 import math
 import sys
 
-
 '''
 notes:
-
-person and ball class for the cars
-with single speed system, cars no longer slow down and re-accelerate
-on corners (this is more representative)
+YELLOW CARS = HAVE DROPPED OFF ALREADY
+deceleration function?
 '''
 
-# Define some colors
+# Define colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0,255,0)
 RED = (255,0,0)
 BLUE = (0,0,255)
- 
+YELLOW = (255, 255, 0)
+
+#define other variables 
 SCREEN_WIDTH = 1430
 SCREEN_HEIGHT = 850
-BALL_SIZE = 15
+CAR_SIZE = 15
 SPEED = 1
-#this was just changed
 PERSON_SPEED = 1.5
 MAXSPEED = 2
 ACCEL = 0.03
-RANDOMPARAM = 25
+RANDOMPARAM = 10
+INFRONT = 35
+SWEEP = 20
+WAITTIME = 10000
 #change dt for acceleration change, bigger = faster accel
-dt = 0.005
+dt = 0.006
 
-class Ball:
+#set height and width of screen
+size = [SCREEN_WIDTH, SCREEN_HEIGHT]
+screen = pygame.display.set_mode(size)
+
+class Car:
     """
-    Class to keep track of a ball's location and vector.
+    Class to keep track of a car's location and speed
     """
     def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.speed = 0
+        self.x = 1250
+        self.y = 700
+        self.speed = SPEED/2
         self.y_accel = 0
         self.x_accel = 0
+        self.color = RED
 
-    def stop(self):
+        self.drop_val = -1
+        self.drop_x = 0
+        self.drop_y = 0
+
+        self.drop_bool = True
+        self.accel_bool = True
+        self.is_dropped = False
+
+
+    def stop(self, the_drop_bool):
         self.speed = 0
         self.y_accel = 0
         self.x_accel = 0
+        if the_drop_bool == True:
+            self.color = YELLOW        
+
+
+    def detect(self, detect_var):
+        #right 
+        if detect_var == 0:
+            for sweep in range(-SWEEP, SWEEP):
+                for infront in range(20, INFRONT):
+                    value1 = screen.get_at((int(self.x)+sweep, int(self.y)-infront))
+                    
+                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
+                        self.accel_bool = False
+                        self.stop(False)
+                        return self.accel_bool
+ 
+        #top
+        elif detect_var == 1:
+            for sweep in range(-SWEEP, SWEEP):
+                for infront in range(20, INFRONT):    
+                    value1 = screen.get_at(((int(self.x)-infront), int(self.y) + sweep))
+                    
+                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
+                        self.accel_bool = False
+                        self.stop(False)
+                        return self.accel_bool
+
+        #left
+        elif detect_var == 2:
+            #sweep allows for it to be a rectangle object detection
+            for sweep in range(-SWEEP, SWEEP):
+                for infront in range(20,INFRONT):
+                    value1 = screen.get_at((int(self.x)+sweep, int(self.y)+infront))  
+
+                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
+                        self.accel_bool = False   
+                        self.stop(False)
+                        return self.accel_bool
+
 
     def accelerate(self, var1):
         self.Y_ACCEL = self.y_accel*self.y_accel * dt
@@ -65,8 +116,10 @@ class Ball:
             if self.speed > MAXSPEED:
                 self.speed = MAXSPEED
                 self.y -= MAXSPEED
+                
             else:   
                 self.y -= self.speed
+                
             self.y_accel += ACCEL
 
         #from top side
@@ -75,8 +128,10 @@ class Ball:
             if self.speed > MAXSPEED:
                 self.speed = MAXSPEED
                 self.x -= MAXSPEED
+               
             else:
                 self.x -= self.speed
+                
             self.x_accel += ACCEL
 
         #from left side
@@ -85,59 +140,17 @@ class Ball:
             if self.speed > MAXSPEED:
                 self.speed = MAXSPEED
                 self.y += MAXSPEED
+                
             else:
                 self.y += self.speed
+                
             self.y_accel += ACCEL
 
         else:
             print('error accelerate')
             print(var1)
             sys.exit()
-
-    def decelerate(self, var1):
-        self.Y_ACCEL = self.y_accel*self.y_accel * dt
-        self.X_ACCEL = self.x_accel*self.x_accel * dt
-
-        #from right side
-        if var1 == 0:
-            self.speed = (self.speed - (self.Y_ACCEL))    
-            if self.speed < 0:
-                self.speed = 0
-                self.y -= 0
-            else:
-                self.y -= self.speed
-            self.y_accel += ACCEL
-
-        #from top side
-        elif var1 == 1:
-            self.speed = (self.speed - (self.X_ACCEL))
-            if self.speed < 0:
-                self.speed = 0
-                self.x -= 0
-            else:
-                self.x -= self.speed
-            self.x_accel += ACCEL
-            
-        #from left side
-        elif var1 == 2:
-            self.speed = (self.speed - (self.Y_ACCEL))
-            if self.speed < 0:
-                self.speed = 0
-                self.y += 0
-            else:
-                self.y += self.speed
-            self.y_accel += ACCEL
-
-        else:
-            print('error decelerate')
-            sys.exit()
-
-
-    def reset(self):        
-        self.speed = 0
-        self.y_accel = 0
-        self.x_accel = 0
-    
+        
         
 class Person:
     """
@@ -150,22 +163,30 @@ class Person:
         self.speed = PERSON_SPEED
         self.initial = 0
         self.personal_value = random.randint(0,2)
+   
+    def stop(self):
+        self.speed = 0
 
  
-def make_ball():
+def make_car():
     """
-    Function to make a new, random ball.
+    Function to make a new, random car.
     """
-    ball = Ball()                                                                      
-    # Starting position of the ball.
-    ball.x = 1250
-    ball.y = 700
-    ball.speed = SPEED
-    return ball
+    car = Car()                                                                      
+    car.drop_val = random.randint(0,1)
+
+    if car.drop_val == 0:
+        car.drop_x = random.randint(77, 400) * 2
+
+    elif car.drop_val == 1:
+        car.drop_y = random.randint(62, 300) *2
+
+    return car
+
 
 def make_person():
     #make person function that crosses the street and simulate a sidewalk
-    #3 possible segments where pedestrians can spawn
+    #3 possible areas where pedestrians can spawn
     person = Person()
 
     #right side
@@ -192,22 +213,13 @@ def make_person():
 
     return person
  
-def distance(a,b):
-    '''
-    This function will find the distance between any two balls
-    '''
-    return math.sqrt((a.y - b.y)**2 + (a.x - a.y)**2)
  
 def main():
     '''
     This is our main program.
     '''
     pygame.init()
- 
-    # Set the height and width of the screen
-    size = [SCREEN_WIDTH, SCREEN_HEIGHT]
-    screen = pygame.display.set_mode(size)
-    pygame.display.set_caption("Bouncing Balls")
+    pygame.display.set_caption("PHS Car Traffic")
  
     # Loop until the user clicks the close button.
     done = False
@@ -215,122 +227,185 @@ def main():
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
  
-    ball_list = []
+    car_list = []
     person_list = []
 
-    ball = make_ball()
-    ball_list.append(ball)
+    car = make_car()
+    car_list.append(car)
     first_cross = make_person()
     person_list.append(first_cross)
  
     # -------- Main Program Loop -----------
     while not done:
         # --- Event Processing
+    
+        
         for event in pygame.event.get():
+
+            #on sublime, use below    
             if event.type == pygame.QUIT:
                 done = True
-            elif event.type == pygame.KEYDOWN:
-                #Space bar! Spawn a new ball.
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                spawn_bool = True
+
+                for width in range(0, 100):
+                    for height in range(0, 100):
+                        spawn_value = screen.get_at(( (1200 + width) , (650 + height) ))
+                        if spawn_value == RED:
+                            spawn_bool = False
+                            break
+
+                if spawn_bool:
+                    car = make_car()
+                    car_list.append(car)
+
+            if event.type == pygame.KEYDOWN:
+                person = make_person()
+                person_list.append(person)
+
+            #on IDLE, use below
+            '''
+            if event.type == pygame.QUIT:
+                done = True
+            
+            if event.type == pygame.KEYDOWN:
+                print('something')
+                #Space bar spawn a new car.
                 #prevent rapid firing spawn
-                if event.key == pygame.K_SPACE and ball.y < 680:
-                    ball = make_ball()
-                    ball_list.append(ball)
+                if event.key == pygame.K_SPACE and car.y < 680:
+                    print('hello')
+                    car = make_car()
+                    car_list.append(car)
                 if event.key == pygame.K_RETURN:
                     person = make_person()
                     person_list.append(person)
-
+            '''
+        
         #random car spawn
-        x = random.randint(1,RANDOMPARAM)
-        #check if random match and there is a ball above
-        if (x==3) and (ball.y < 680):
-            ball = make_ball()
-            ball_list.append(ball)
+        random_car = random.randint(1,RANDOMPARAM)
+
+        #view finding of rectangle to make sure nearest car is out of area
+        spawn_bool = True
+        for width in range(0, 100):
+            for height in range(0, 100):
+                spawn_value = screen.get_at(( (1200 + width) , (650 + height) ))
+                if spawn_value == RED:
+                    spawn_bool = False
+                    break
+
+        #check if random match and there is a car within rectangular area of start
+        if (random_car==3) and spawn_bool:
+        #and len(car_list)<4: - len car list to restrict car number at once on screen
+            car = make_car()
+            car_list.append(car)
 
         #random pedestrian spawn
-        another_random = random.randint(1, RANDOMPARAM + 100)
-        if (another_random == 3):
+        random_ped = random.randint(1, RANDOMPARAM+100)
+        #random_ped = 3
+        if (random_ped == 3):
             person = make_person()
             person_list.append(person)
  
-        # --- Logic
-        for ball in ball_list:
-            #Move the ball's center, check for position to move ball where
-            #DECELERATING IS BIG KEY - STAY OR NO?
+        # --- car logic
+        for car in car_list:
+            #Move the car's center, check for position to move car where
+            car.accel_bool = True
 
-            #see if ball is on left side, will go vertical motion down
-            accel_bool = True
-            
-            if ball.x < 155 and ball.y > 90:
-                
-                for infront in range(20,30):
-                    value3 = screen.get_at((int(ball.x), int(ball.y)+infront))  
-                    if (value3 == RED) or (value3 == GREEN):
-                        accel_bool = False                        
-                        #ball.decelerate(2)
-                        ball.reset()
-                        break
-
-                if accel_bool:
-                    ball.accelerate(2)
-                
-            else:
-                #see if ball is on right side, will go vertical motion up
-                if ball.y > 100:
-                    for infront in range(20, 30):
-                        value1 = screen.get_at((int(ball.x), int(ball.y)-infront))
-                        if (value1 == RED) or (value1 == GREEN):
-                            accel_bool = False
-                            #ball.decelerate(0)
-                            ball.reset()
-                            break
-                        
-                    if accel_bool:
-                        ball.accelerate(0)
-                    
-                #see if ball is on top side, will go horizontal motion left
-                elif ball.y < 100:
-                    for infront in range(20, 30):
-                        value2 = screen.get_at(((int(ball.x)-infront), int(ball.y)))
-                        
-                        if (value2 == RED) or (value2 == GREEN):
-                            accel_bool = False
-                            #ball.decelerate(1)
-                            ball.reset()
-                            break
-
-                    if accel_bool:    
-                        ball.accelerate(1)
-        
-            #get rid of ball if it crosses 
-            if ball.y >(SCREEN_HEIGHT - 50) and ball.x<(200):
-                del ball_list[0]
+            #see if car is on right side, will go vertical up
+            if car.x > 155 and car.y > 100:
+                car.detect(0)
+                if car.accel_bool:
+                    car.accelerate(0)
 
 
-        #pedestrian crossing
+            #see if car is on top side, will go horizontal left 
+            elif car.x > 155 and car.y < 100:
+                if car.drop_val == 0:
+                    #print(car.x, car.drop_x)
+                    #if int(car.x) == car.drop_x:
+                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):          
+                        for x in range(0, WAITTIME):
+                            car.stop(True)
+
+                        car.x -= 4
+
+                car.detect(1) 
+                if car.accel_bool:                    
+                    car.accelerate(1)
+
+
+            elif car.x < 155 and car.y > 90:
+                #see if car is on left side, will go vertical down
+
+                if car.drop_val == 1:
+                    #print(car.y, car.drop_y)
+                    #print('dropped(car)')
+                    if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y) or (int(car.y+1)==car.drop_y):          
+                        for y in range(0, WAITTIME):
+                            car.stop(True)
+
+                        car.y +=4
+
+                car.detect(2)
+                if car.accel_bool:
+                    car.accelerate(2)
+
+                                        
+            #get rid of car if it crosses bottom line (memory management)
+            if car.y >(SCREEN_HEIGHT - 50) and car.x<(200):
+                del car_list[0]
+
+
+        #pedestrian logic
         for person in person_list:
-            #person coming from right leg
+
+            person_bool = True
+
             if person.personal_value == 0:
-                person.x -= PERSON_SPEED
+                #simple personobj detection:
+                #coming from right
+                for x in range(10, 25):
+                    for person_sweep in range(-4, 4):
+                        person_infront = screen.get_at(((int(person.x)-x), int(person.y) + person_sweep))
+                        if person_infront==RED or person_infront==GREEN:
+                            person.stop()
+                            person_bool = False
+
+                if person_bool:
+                    person.x -= PERSON_SPEED
 
             #person coming from top
             elif person.personal_value == 1:
-                person.y += PERSON_SPEED
+                for y in range(10,25):
+                    for person_sweep in range(-4, 4):
+                        person_infront = screen.get_at(((int(person.x) + person_sweep), int(person.y) +y))
+                        if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
+                            person.stop()
+                            person_bool = False
+
+                if person_bool:
+                    person.y += PERSON_SPEED
 
             #person coming from left leg
             elif person.personal_value == 2:
-                person.x += PERSON_SPEED
+                for x in range(10,25):
+                    for person_sweep in range(-4, 4):
+                        person_infront = screen.get_at((int(person.x)+x, int(person.y)+person_sweep))
+                        if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
+                            person.stop()
+                            person_bool = False
 
-            else:
-                print('error personlist')
-                sys.exit()
-
-            #always check if person has walked 200 pixels, then erase
+                if person_bool:
+                    person.x += PERSON_SPEED
+            
+            #always check if person has walked 225 pixels, then erase from list (memory management)
             if((person.personal_value == 0 or person.personal_value== 2)
-               and (abs(person.initial - person.x) > 200)):
+               and (abs(person.initial - person.x) > 225)):
                 del(person_list[0])
 
             elif((person.personal_value == 1)
-                 and abs(person.initial - person.y) > 200):
+                 and abs(person.initial - person.y) > 225):
                 del(person_list[0])
 
         # --- Drawing
@@ -342,8 +417,9 @@ def main():
         pygame.draw.rect(screen, BLACK, (100, 50, 100, 700))
         
         # draw everything
-        for ball in ball_list:
-            pygame.draw.circle(screen, RED, [int(ball.x), int(ball.y)], BALL_SIZE)
+        
+        for car in car_list:
+            pygame.draw.circle(screen, car.color, [int(car.x), int(car.y)], CAR_SIZE)
 
         for person in person_list:
             pygame.draw.circle(screen, GREEN, [int(person.x), int(person.y)], 7)
@@ -359,4 +435,3 @@ def main():
  
 if __name__ == "__main__":
     main()
-
