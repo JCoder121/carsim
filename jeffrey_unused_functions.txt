@@ -135,3 +135,34 @@ unused car functions pasted here:
                 #    self.x += PERSON_SPEED
 '''
    
+
+
+
+'''
+
+#person stop function?
+    #person coming from top
+    elif person.personal_value == 1:
+
+        for y in range(10,20):
+            person_infront = screen.get_at(((int(person.x)), int(person.y) +y))
+            if person_infront == RED or person_infront == GREEN:
+                person.stop()
+                person_bool = False
+
+        if person_bool:
+            person.y += PERSON_SPEED
+
+    #person coming from left leg
+    elif person.personal_value == 2:
+        for x in range(10,20):
+            person_infront = screen.get_at((int(person.x)+x, int(person.y)))
+            if person_infront == RED or person_infront == GREEN:
+                person.stop()
+                person_bool = False
+
+        if person_bool:
+            person.x += PERSON_SPEED
+
+
+'''
