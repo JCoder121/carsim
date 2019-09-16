@@ -12,6 +12,7 @@ import sys
 notes:
 YELLOW CARS = HAVE DROPPED OFF ALREADY
 deceleration function?
+ani doing people exiting cars - range from 1 to 3
 '''
 
 # Define colors
@@ -71,39 +72,25 @@ class Car:
 
 
     def detect(self, detect_var):
-        #right 
-        if detect_var == 0:
-            for sweep in range(-SWEEP, SWEEP):
-                for infront in range(20, INFRONT):
-                    value1 = screen.get_at((int(self.x)+sweep, int(self.y)-infront))
-                    
-                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
-                        self.accel_bool = False
-                        self.stop(False)
-                        return self.accel_bool
- 
-        #top
-        elif detect_var == 1:
-            for sweep in range(-SWEEP, SWEEP):
-                for infront in range(20, INFRONT):    
-                    value1 = screen.get_at(((int(self.x)-infront), int(self.y) + sweep))
-                    
-                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
-                        self.accel_bool = False
-                        self.stop(False)
-                        return self.accel_bool
+        
+        for sweep in range(-SWEEP, SWEEP):
+            for infront in range(20, INFRONT):
+                #right
+                if detect_var == 0:
+                    detect_value = screen.get_at((int(self.x)+sweep, int(self.y)-infront))
 
-        #left
-        elif detect_var == 2:
-            #sweep allows for it to be a rectangle object detection
-            for sweep in range(-SWEEP, SWEEP):
-                for infront in range(20,INFRONT):
-                    value1 = screen.get_at((int(self.x)+sweep, int(self.y)+infront))  
+                #top
+                elif detect_var == 1:
+                    detect_value = screen.get_at(((int(self.x)-infront), int(self.y) + sweep))
 
-                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
-                        self.accel_bool = False   
-                        self.stop(False)
-                        return self.accel_bool
+                #left
+                elif detect_var == 2:
+                    detect_value = screen.get_at((int(self.x)+sweep, int(self.y)+infront)) 
+
+                if (detect_value==RED) or (detect_value==GREEN) or (detect_value==YELLOW):
+                    self.accel_bool = False
+                    self.stop(False)
+                    return self.accel_bool
 
 
     def accelerate(self, var1):
