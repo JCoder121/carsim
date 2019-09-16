@@ -1,4 +1,4 @@
-#updated section 9/15/19 5:40PM
+#updated section 9/16/19 8:20AM
 #anichau and jeffchen
 
 import pygame
@@ -16,6 +16,7 @@ do average speed, etc. in mph
 
 Exiting students should be blue, roughly same circle size
 travel about 50 pix
+work on passenger
 '''
 
 # Define colors
@@ -190,9 +191,11 @@ def make_person():
 
     return person
  
-def make_passenger():
+def make_passenger(x, y):
     passenger = Passenger()
 
+    passenger.x = x
+    passenger.y = y
     return passenger
 
     #make passenger students that exit from the dropped off cars
