@@ -1,17 +1,21 @@
-#updated section 9/15/19 4:05PM
+#updated section 9/15/19 5:40PM
 #anichau and jeffchen
-
-#decelerating is still a question
 
 import pygame
 import random
 import math
-import sys
 
 '''
 notes:
 YELLOW CARS = HAVE DROPPED OFF ALREADY
 deceleration function?
+ani doing people exiting cars - range from 1 to 3
+next step: can definitely start doing actual statistics
+count number of cars that got deleted in x amount of time = flow
+do average speed, etc. in mph
+
+Exiting students should be blue, roughly same circle size
+travel about 50 pix
 '''
 
 # Define colors
@@ -49,8 +53,7 @@ class Car:
         self.x = 1250
         self.y = 700
         self.speed = SPEED/2
-        self.y_accel = 0
-        self.x_accel = 0
+        self.accel = 0
         self.color = RED
 
         self.drop_val = -1
@@ -64,94 +67,63 @@ class Car:
 
     def stop(self, the_drop_bool):
         self.speed = 0
-        self.y_accel = 0
-        self.x_accel = 0
-        if the_drop_bool == True:
+        self.accel = 0
+        if the_drop_bool:
             self.color = YELLOW        
 
-
     def detect(self, detect_var):
-        #right 
-        if detect_var == 0:
-            for sweep in range(-SWEEP, SWEEP):
-                for infront in range(20, INFRONT):
-                    value1 = screen.get_at((int(self.x)+sweep, int(self.y)-infront))
-                    
-                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
-                        self.accel_bool = False
-                        self.stop(False)
-                        return self.accel_bool
- 
-        #top
-        elif detect_var == 1:
-            for sweep in range(-SWEEP, SWEEP):
-                for infront in range(20, INFRONT):    
-                    value1 = screen.get_at(((int(self.x)-infront), int(self.y) + sweep))
-                    
-                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
-                        self.accel_bool = False
-                        self.stop(False)
-                        return self.accel_bool
+        
+        for sweep in range(-SWEEP, SWEEP):
+            for infront in range(20, INFRONT):
+                #right
+                if detect_var == 0:
+                    detect_value = screen.get_at((int(self.x)+sweep, int(self.y)-infront))
 
-        #left
-        elif detect_var == 2:
-            #sweep allows for it to be a rectangle object detection
-            for sweep in range(-SWEEP, SWEEP):
-                for infront in range(20,INFRONT):
-                    value1 = screen.get_at((int(self.x)+sweep, int(self.y)+infront))  
+                #top
+                elif detect_var == 1:
+                    detect_value = screen.get_at(((int(self.x)-infront), int(self.y)+sweep))
 
-                    if (value1 == RED) or (value1 == GREEN) or (value1 == YELLOW):
-                        self.accel_bool = False   
-                        self.stop(False)
-                        return self.accel_bool
+                #left
+                elif detect_var == 2:
+                    detect_value = screen.get_at((int(self.x)+sweep, int(self.y)+infront)) 
+
+                if (detect_value==RED) or (detect_value==GREEN) or (detect_value==YELLOW):
+                    self.accel_bool = False
+                    self.stop(False)
+                    return self.accel_bool
 
 
     def accelerate(self, var1):
-        self.Y_ACCEL = self.y_accel*self.y_accel * dt
-        self.X_ACCEL = self.x_accel*self.x_accel * dt
-    
-        #from right side
-        if var1 == 0:
-            self.speed = (self.speed + (self.Y_ACCEL))      
-            if self.speed > MAXSPEED:
-                self.speed = MAXSPEED
-                self.y -= MAXSPEED
-                
-            else:   
-                self.y -= self.speed
-                
-            self.y_accel += ACCEL
+        self.ACCEL = self.accel * self.accel * dt
+        self.speed = (self.speed + (self.ACCEL))
 
-        #from top side
-        elif var1 == 1:
-            self.speed = (self.speed + (self.X_ACCEL))
-            if self.speed > MAXSPEED:
-                self.speed = MAXSPEED
-                self.x -= MAXSPEED
-               
-            else:
-                self.x -= self.speed
-                
-            self.x_accel += ACCEL
+        if self.speed > MAXSPEED:
+            self.speed = MAXSPEED
 
-        #from left side
-        elif var1 == 2:    
-            self.speed = (self.speed + (self.Y_ACCEL))
-            if self.speed > MAXSPEED:
-                self.speed = MAXSPEED
+            #right
+            if var1 == 0:
+                self.y += -MAXSPEED
+            #top
+            elif var1 == 1:
+                self.x += -MAXSPEED
+            #lieft
+            elif var1 == 2:
                 self.y += MAXSPEED
-                
-            else:
-                self.y += self.speed
-                
-            self.y_accel += ACCEL
 
         else:
-            print('error accelerate')
-            print(var1)
-            sys.exit()
-        
-        
+            #right
+            if var1 == 0:
+                self.y += -self.speed 
+            #top
+            elif var1 == 1:
+                self.x += -self.speed
+            #left
+            elif var1 == 2:
+                self.y += self.speed
+
+        self.accel+= ACCEL
+
+
 class Person:
     """
     Class to make person randomly spawn in 3+ randomly
@@ -166,7 +138,6 @@ class Person:
    
     def stop(self):
         self.speed = 0
-
  
 def make_car():
     """
@@ -185,8 +156,7 @@ def make_car():
 
 
 def make_person():
-    #make person function that crosses the street and simulate a sidewalk
-    #3 possible areas where pedestrians can spawn
+    #person that crosses the street/simulate a sidewalk, 3 possible areas where pedestrians can spawn
     person = Person()
 
     #right side
@@ -207,12 +177,8 @@ def make_person():
         person.initial = person.y
         person.y = 450
 
-    else:
-        print('error personal value')
-        sys.exit()    
-
     return person
- 
+
  
 def main():
     '''
@@ -239,7 +205,6 @@ def main():
     while not done:
         # --- Event Processing
     
-        
         for event in pygame.event.get():
 
             #on sublime, use below    
@@ -322,9 +287,7 @@ def main():
             #see if car is on top side, will go horizontal left 
             elif car.x > 155 and car.y < 100:
                 if car.drop_val == 0:
-                    #print(car.x, car.drop_x)
-                    #if int(car.x) == car.drop_x:
-                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):          
+                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x):          
                         for x in range(0, WAITTIME):
                             car.stop(True)
 
@@ -339,13 +302,12 @@ def main():
                 #see if car is on left side, will go vertical down
 
                 if car.drop_val == 1:
-                    #print(car.y, car.drop_y)
-                    #print('dropped(car)')
-                    if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y) or (int(car.y+1)==car.drop_y):          
+                    if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y):    
                         for y in range(0, WAITTIME):
                             car.stop(True)
 
                         car.y +=4
+
 
                 car.detect(2)
                 if car.accel_bool:
@@ -355,6 +317,10 @@ def main():
             #get rid of car if it crosses bottom line (memory management)
             if car.y >(SCREEN_HEIGHT - 50) and car.x<(200):
                 del car_list[0]
+                #fail safe to check if car going down is still red - not dropped off = bug
+                if car.color == RED:
+                    print("car not dropped off, something wrong")
+                    done = True
 
 
         #pedestrian logic
@@ -368,7 +334,7 @@ def main():
                 for x in range(10, 25):
                     for person_sweep in range(-4, 4):
                         person_infront = screen.get_at(((int(person.x)-x), int(person.y) + person_sweep))
-                        if person_infront==RED or person_infront==GREEN:
+                        if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
                             person.stop()
                             person_bool = False
 
@@ -392,6 +358,7 @@ def main():
                 for x in range(10,25):
                     for person_sweep in range(-4, 4):
                         person_infront = screen.get_at((int(person.x)+x, int(person.y)+person_sweep))
+                        
                         if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
                             person.stop()
                             person_bool = False
@@ -408,6 +375,7 @@ def main():
                  and abs(person.initial - person.y) > 225):
                 del(person_list[0])
 
+
         # --- Drawing
         # Set the screen background
         screen.fill(WHITE)
@@ -423,6 +391,7 @@ def main():
 
         for person in person_list:
             pygame.draw.circle(screen, GREEN, [int(person.x), int(person.y)], 7)
+        
  
         # --- Wrap-up, limit to 60 frames per second
         clock.tick(60)
