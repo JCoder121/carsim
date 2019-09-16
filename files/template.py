@@ -123,17 +123,6 @@ class Car:
 
         self.accel+= ACCEL
 
-class Passenger:
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.speed = PERSON_SPEED
-        self.passenger_value = -1
-        self.set_y = -1
-        self.set_x = -1
-        self.initial_x = -1
-        self.initial_y = -1
-
 
 class Person:
     """
@@ -189,13 +178,7 @@ def make_person():
         person.y = 450
 
     return person
- 
-def make_passenger():
-    passenger = Passenger()
 
-    return passenger
-
-    #make passenger students that exit from the dropped off cars
  
 def main():
     '''
@@ -212,7 +195,6 @@ def main():
  
     car_list = []
     person_list = []
-    passenger_list = []
 
     car = make_car()
     car_list.append(car)
@@ -223,7 +205,6 @@ def main():
     while not done:
         # --- Event Processing
     
-        
         for event in pygame.event.get():
 
             #on sublime, use below    
@@ -312,12 +293,6 @@ def main():
 
                         car.x -= 4
 
-                    passenger = make_passenger()
-                    passenger_list.append(passenger)
-                    passenger.passenger_value = car.drop_val
-                    passenger.set_x = car.drop_x
-
-
                 car.detect(1) 
                 if car.accel_bool:                    
                     car.accelerate(1)
@@ -332,11 +307,6 @@ def main():
                             car.stop(True)
 
                         car.y +=4
-
-                        passenger = make_passenger()
-                        passenger_list.append(passenger)
-                        passenger.passenger_value = car.drop_val
-                        passenger.set_y =  car.drop_y
 
 
                 car.detect(2)
@@ -405,23 +375,6 @@ def main():
                  and abs(person.initial - person.y) > 225):
                 del(person_list[0])
 
-        #exiting passenger logic
-        for passenger in passenger_list:
-            #need distance check
-            #top row passenger
-
-            if passenger.passenger_value == 0:
-                passenger.x = passenger.set_x
-                passenger.y += -PERSON_SPEED
-                
-
-            #left leg passenger
-            elif passenger.passenger_value == 1:
-                passenger.y = passenger.set_y
-                passenger.x += -PERSON_SPEED
-
-
-
 
         # --- Drawing
         # Set the screen background
@@ -438,10 +391,6 @@ def main():
 
         for person in person_list:
             pygame.draw.circle(screen, GREEN, [int(person.x), int(person.y)], 7)
-
-        
-        for passenger in passenger_list:
-            pygame.draw.circle(screen, BLUE, [int(passenger.x), int(passenger.y)], 8)
         
  
         # --- Wrap-up, limit to 60 frames per second
