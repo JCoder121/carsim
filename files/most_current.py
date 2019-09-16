@@ -1,7 +1,5 @@
-#updated section 9/15/19 4:05PM
+#updated section 9/15/19 5:40PM
 #anichau and jeffchen
-
-#decelerating is still a question
 
 import pygame
 import random
@@ -12,6 +10,9 @@ notes:
 YELLOW CARS = HAVE DROPPED OFF ALREADY
 deceleration function?
 ani doing people exiting cars - range from 1 to 3
+next step: can definitely start doing actual statistics
+count number of cars that got deleted in x amount of time = flow
+do average speed, etc. in mph
 '''
 
 # Define colors
@@ -64,9 +65,8 @@ class Car:
     def stop(self, the_drop_bool):
         self.speed = 0
         self.accel = 0
-        if the_drop_bool == True:
+        if the_drop_bool:
             self.color = YELLOW        
-
 
     def detect(self, detect_var):
         
@@ -135,7 +135,6 @@ class Person:
    
     def stop(self):
         self.speed = 0
-
  
 def make_car():
     """
@@ -286,9 +285,7 @@ def main():
             #see if car is on top side, will go horizontal left 
             elif car.x > 155 and car.y < 100:
                 if car.drop_val == 0:
-                    #print(car.x, car.drop_x)
-                    #if int(car.x) == car.drop_x:
-                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):          
+                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x):          
                         for x in range(0, WAITTIME):
                             car.stop(True)
 
@@ -303,9 +300,7 @@ def main():
                 #see if car is on left side, will go vertical down
 
                 if car.drop_val == 1:
-                    #print(car.y, car.drop_y)
-                    #print('dropped(car)')
-                    if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y) or (int(car.y+1)==car.drop_y):          
+                    if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y):    
                         for y in range(0, WAITTIME):
                             car.stop(True)
 
@@ -319,6 +314,10 @@ def main():
             #get rid of car if it crosses bottom line (memory management)
             if car.y >(SCREEN_HEIGHT - 50) and car.x<(200):
                 del car_list[0]
+                #fail safe to check if car going down is still red - not dropped off = bug
+                if car.color == RED:
+                    print("car not dropped off, something wrong")
+                    done = True
 
 
         #pedestrian logic
@@ -332,7 +331,7 @@ def main():
                 for x in range(10, 25):
                     for person_sweep in range(-4, 4):
                         person_infront = screen.get_at(((int(person.x)-x), int(person.y) + person_sweep))
-                        if person_infront==RED or person_infront==GREEN:
+                        if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
                             person.stop()
                             person_bool = False
 
@@ -356,6 +355,7 @@ def main():
                 for x in range(10,25):
                     for person_sweep in range(-4, 4):
                         person_infront = screen.get_at((int(person.x)+x, int(person.y)+person_sweep))
+                        
                         if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
                             person.stop()
                             person_bool = False
