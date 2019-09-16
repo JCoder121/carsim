@@ -6,14 +6,12 @@
 import pygame
 import random
 import math
-import sys
 
 '''
 notes:
 YELLOW CARS = HAVE DROPPED OFF ALREADY
 deceleration function?
 ani doing people exiting cars - range from 1 to 3
-test
 '''
 
 # Define colors
@@ -51,8 +49,7 @@ class Car:
         self.x = 1250
         self.y = 700
         self.speed = SPEED/2
-        self.y_accel = 0
-        self.x_accel = 0
+        self.accel = 0
         self.color = RED
 
         self.drop_val = -1
@@ -66,8 +63,7 @@ class Car:
 
     def stop(self, the_drop_bool):
         self.speed = 0
-        self.y_accel = 0
-        self.x_accel = 0
+        self.accel = 0
         if the_drop_bool == True:
             self.color = YELLOW        
 
@@ -82,7 +78,7 @@ class Car:
 
                 #top
                 elif detect_var == 1:
-                    detect_value = screen.get_at(((int(self.x)-infront), int(self.y) + sweep))
+                    detect_value = screen.get_at(((int(self.x)-infront), int(self.y)+sweep))
 
                 #left
                 elif detect_var == 2:
@@ -95,50 +91,35 @@ class Car:
 
 
     def accelerate(self, var1):
-        self.Y_ACCEL = self.y_accel*self.y_accel * dt
-        self.X_ACCEL = self.x_accel*self.x_accel * dt
-    
-        #from right side
-        if var1 == 0:
-            self.speed = (self.speed + (self.Y_ACCEL))      
-            if self.speed > MAXSPEED:
-                self.speed = MAXSPEED
-                self.y -= MAXSPEED
-                
-            else:   
-                self.y -= self.speed
-                
-            self.y_accel += ACCEL
+        self.ACCEL = self.accel * self.accel * dt
+        self.speed = (self.speed + (self.ACCEL))
 
-        #from top side
-        elif var1 == 1:
-            self.speed = (self.speed + (self.X_ACCEL))
-            if self.speed > MAXSPEED:
-                self.speed = MAXSPEED
-                self.x -= MAXSPEED
-               
-            else:
-                self.x -= self.speed
-                
-            self.x_accel += ACCEL
+        if self.speed > MAXSPEED:
+            self.speed = MAXSPEED
 
-        #from left side
-        elif var1 == 2:    
-            self.speed = (self.speed + (self.Y_ACCEL))
-            if self.speed > MAXSPEED:
-                self.speed = MAXSPEED
+            #right
+            if var1 == 0:
+                self.y += -MAXSPEED
+            #top
+            elif var1 == 1:
+                self.x += -MAXSPEED
+            #lieft
+            elif var1 == 2:
                 self.y += MAXSPEED
-                
-            else:
-                self.y += self.speed
-                
-            self.y_accel += ACCEL
 
         else:
-            print('error accelerate')
-            print(var1)
-            sys.exit()
-        
+            #right
+            if var1 == 0:
+                self.y += -self.speed 
+            #top
+            elif var1 == 1:
+                self.x += -self.speed
+            #left
+            elif var1 == 2:
+                self.y += self.speed
+
+        self.accel+= ACCEL
+
         
 class Person:
     """
@@ -173,8 +154,7 @@ def make_car():
 
 
 def make_person():
-    #make person function that crosses the street and simulate a sidewalk
-    #3 possible areas where pedestrians can spawn
+    #person that crosses the street/simulate a sidewalk, 3 possible areas where pedestrians can spawn
     person = Person()
 
     #right side
@@ -194,10 +174,6 @@ def make_person():
         person.x = 60
         person.initial = person.y
         person.y = 450
-
-    else:
-        print('error personal value')
-        sys.exit()    
 
     return person
  
