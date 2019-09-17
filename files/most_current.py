@@ -1,3 +1,22 @@
+#ani chau if you're reading this you're a bot
+
+
+#you can put all of your edits on this most_current.py document
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #updated section 9/12/19 2:25PM
 #anichau and jeffchen
 
@@ -6,6 +25,7 @@
 #can move on to simulating the actual passenger drop off
 #remember on drop off to associate a boolean
 #if dropped off already, can't do it again
+#hello test
 
 import pygame
 import random
