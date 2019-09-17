@@ -1,4 +1,4 @@
-#updated section 9/16/19 8:20AM
+#updated section 9/16/19 8:00PM
 #anichau and jeffchen
 #signed jeffrey chen
 
@@ -21,6 +21,14 @@ do average speed, etc. in mph
 Exiting students should be blue, roughly same circle size
 travel about 50 pix
 work on passenger
+
+drop off list of times to wait - access that through the rand int
+
+STUFF IS MESSED UP
+
+output things to a file to make more realisitc - at this point in time, make timestamp and write a line about car
+
+future plans: film directly translate to simulation - read in and reflect (through drone)
 '''
 
 # Define colors
@@ -43,9 +51,12 @@ ACCEL = 0.03
 RANDOMPARAM = 10
 INFRONT = 35
 SWEEP = 20
-WAITTIME = 10000
+
+# wait time is currently unncessary
+#WAITTIME = 10000
 #change dt for acceleration change, bigger = faster accel
-dt = 0.006
+#dt = 0.006
+dt = 1
 
 #set height and width of screen
 size = [SCREEN_WIDTH, SCREEN_HEIGHT]
@@ -61,6 +72,14 @@ class Car:
         self.speed = SPEED/2
         self.accel = 0
         self.color = RED
+        self.passenger_num = random.randint(2,4)
+        self.passenger_check = 0
+
+        '''
+        self.waiting_time = 0
+        self.now_time = 0
+        '''
+
 
         self.drop_val = -1
         self.drop_x = 0
@@ -157,7 +176,8 @@ def make_car():
     Function to make a new, random car.
     """
     car = Car()                                                                      
-    car.drop_val = random.randint(0,1)
+    #car.drop_val = random.randint(0,1)
+    car.drop_val = 0
 
     if car.drop_val == 0:
         car.drop_x = random.randint(77, 400) * 2
@@ -218,6 +238,7 @@ def main():
     car_list = []
     person_list = []
     passenger_list = []
+    wait_list = [10,200000,30000000]
 
     car = make_car()
     car_list.append(car)
@@ -270,6 +291,7 @@ def main():
                     person_list.append(person)
             '''
         
+        '''
         #random car spawn
         random_car = random.randint(1,RANDOMPARAM)
 
@@ -282,11 +304,13 @@ def main():
                     spawn_bool = False
                     break
 
+
         #check if random match and there is a car within rectangular area of start
         if (random_car==3) and spawn_bool:
         #and len(car_list)<4: - len car list to restrict car number at once on screen
             car = make_car()
             car_list.append(car)
+        '''
 
         
         #random pedestrian spawn
@@ -301,7 +325,14 @@ def main():
         for car in car_list:
             #Move the car's center, check for position to move car where
             car.accel_bool = True
-            car.pass_bool
+            car.pass_bool = True
+
+            car.waiting_time = pygame.time.get_ticks()
+
+            #print(passenger_list)
+            #cooldown?
+
+            #print(car.waiting_time)
 
             #see if car is on right side, will go vertical up
             if car.x > 155 and car.y > 100:
@@ -313,19 +344,55 @@ def main():
             #see if car is on top side, will go horizontal left 
             elif car.x > 155 and car.y < 100:
                 if car.drop_val == 0:
-                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x):          
-                        for x in range(0, WAITTIME):
+                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x):       
+                        #print('yo')   
+                        '''
+                        car.now = pygame.time.get_ticks()
+
+                        print(car.now- car.waiting_time)  
+
+                        if (car.now - car.waiting_time) < 100:
+                                                      
+
+                            car.stop(True)
+                            
+                            if car.pass_bool:
+                                passenger = make_passenger(car.drop_x, car.y-15)
+                                passenger.initial = car.y
+                                passenger_list.append(passenger)
+                                passenger.passenger_value = car.drop_val
+                                car.pass_bool = False
+
+                        else:
+                            print('escape!')
+                            car.x -= 4
+                        '''
+
+                        #while (car.passenger_check <= car.passenger_num):
+                        #while (len(passenger_list) <= car.passenger_num):
+                        while (make_count<= car.passenger_num):
+
+                            #print(car.passenger_check)
                             car.stop(True)
 
-                        car.x -= 4
+                            #if car.pass_bool:
 
-                        if car.pass_bool:
-                            passenger = make_passenger(car.drop_x, car.y-15)
-                            passenger.initial = car.y
-                            passenger_list.append(passenger)
-                            passenger.passenger_value = car.drop_val
-                            car.pass_bool = False
+                            pass_bool = False
 
+                            for x in range(0, 25):
+                                if screen.get_at((car.drop_x,int(car.y)-x))!=BLUE:
+                                    pass_bool = True
+
+                            if(pass_bool):
+                                passenger = make_passenger(car.drop_x, car.y-15)
+                                passenger.initial = car.y
+                                passenger_list.append(passenger)
+                                passenger.passenger_value = car.drop_val
+                                make_count += 1
+                                #car.pass_bool = False
+
+
+                        car.x -=4
 
                 car.detect(1) 
                 if car.accel_bool:                    
@@ -334,13 +401,13 @@ def main():
 
             elif car.x < 155 and car.y > 90:
                 #see if car is on left side, will go vertical down
-                print(car.y, car.drop_y)
                 if car.drop_val == 1:
                     if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y):    
-                        for y in range(0, WAITTIME):
-                            car.stop(True)
 
-                        car.y +=4
+                        #for y in range(0, wait_list[random.randint(0,2)]):
+                        #car.now = pygame.time.get_ticks()
+
+                        car.stop(True)
 
                         if car.pass_bool:
                             passenger = make_passenger(car.x-15, car.drop_y)
@@ -348,6 +415,8 @@ def main():
                             passenger_list.append(passenger)
                             passenger.passenger_value = car.drop_val
                             car.pass_bool = False
+
+                        car.y +=4
 
 
                 car.detect(2)
