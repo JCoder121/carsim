@@ -1,5 +1,6 @@
 #updated section 9/16/19 8:20AM
 #anichau and jeffchen
+#signed jeffrey chen
 
 import pygame
 import random
@@ -333,7 +334,7 @@ def main():
 
             elif car.x < 155 and car.y > 90:
                 #see if car is on left side, will go vertical down
-
+                print(car.y, car.drop_y)
                 if car.drop_val == 1:
                     if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y):    
                         for y in range(0, WAITTIME):
