@@ -55,8 +55,8 @@ SWEEP = 20
 # wait time is currently unncessary
 #WAITTIME = 10000
 #change dt for acceleration change, bigger = faster accel
-#dt = 0.006
-dt = 1
+dt = 0.004
+#dt = 1
 
 #set height and width of screen
 size = [SCREEN_WIDTH, SCREEN_HEIGHT]
