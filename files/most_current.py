@@ -24,7 +24,9 @@ work on passenger
 
 drop off list of times to wait - access that through the rand int
 
-STUFF IS MESSED UP
+PASSENGERS ARE STILL NOT WORKING - CAR NEEDS TO BE ABLE TO WAIT
+2 options - have make_passenger inside the main loop make it however many times OR
+have make_passenger in def function have the number of passengers to make
 
 output things to a file to make more realisitc - at this point in time, make timestamp and write a line about car
 
@@ -57,6 +59,9 @@ SWEEP = 20
 #change dt for acceleration change, bigger = faster accel
 dt = 0.004
 #dt = 1
+car_list = []
+person_list = []
+passenger_list = []
 
 #set height and width of screen
 size = [SCREEN_WIDTH, SCREEN_HEIGHT]
@@ -79,7 +84,6 @@ class Car:
         self.waiting_time = 0
         self.now_time = 0
         '''
-
 
         self.drop_val = -1
         self.drop_x = 0
@@ -153,7 +157,10 @@ class Passenger:
     def __init__(self):
         self.x = 0
         self.y = 0
+        self.initial = -1
+        self.passenger_value = -1
         self.speed = PERSON_SPEED
+        self.color = BLUE
 
 class Person:
     """
@@ -212,13 +219,27 @@ def make_person():
 
     return person
  
-def make_passenger(x, y):
-    passenger = Passenger()
 
-    passenger.x = x
-    passenger.y = y
-    passenger.initial = 0
-    return passenger
+#make_passenger(car.drop_x, car.y -15)
+def make_passenger(x, y, how_many):
+
+    pass_bool = True
+    for passengers in range(0, how_many):
+        #car.stop(True)
+        for width in range(-5,5):
+            for height in range(0, 25):
+                if screen.get_at((x+width, y+height)) == BLUE:
+                    pass_bool = False
+        
+        if pass_bool:
+            passenger = Passenger()
+
+            passenger.x = x
+            passenger.y = y
+            passenger.initial = y
+            passenger_list.append(passenger)
+
+    #return passenger
 
     #make passenger students that exit from the dropped off cars
  
@@ -235,9 +256,6 @@ def main():
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
  
-    car_list = []
-    person_list = []
-    passenger_list = []
     wait_list = [10,200000,30000000]
 
     car = make_car()
@@ -248,7 +266,7 @@ def main():
     # -------- Main Program Loop -----------
     while not done:
         # --- Event Processing
-    
+
         for event in pygame.event.get():
 
             #on sublime, use below    
@@ -343,54 +361,33 @@ def main():
 
             #see if car is on top side, will go horizontal left 
             elif car.x > 155 and car.y < 100:
+                
                 if car.drop_val == 0:
-                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x):       
-                        #print('yo')   
+                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
+                        
+                        car.stop(True)
+                        make_passenger(int(car.x), int(car.y)-10, car.passenger_num)
+                        #print('entered')
                         '''
-                        car.now = pygame.time.get_ticks()
-
-                        print(car.now- car.waiting_time)  
-
-                        if (car.now - car.waiting_time) < 100:
-                                                      
-
+                        #for x in range(0, car.passenger_num):
+                        quick_val = 0
+                        pass_bool = True
+                        #print(pass_bool)
+                        while (quick_val <= car.passenger_num):
                             car.stop(True)
+                            for width in range(-5, 5):
+                                for y in range(0, 30):
+                                    if screen.get_at((int(car.x) + width, int(car.y) - y)) != BLUE:
+                                        pass_bool = True
                             
-                            if car.pass_bool:
-                                passenger = make_passenger(car.drop_x, car.y-15)
-                                passenger.initial = car.y
-                                passenger_list.append(passenger)
-                                passenger.passenger_value = car.drop_val
-                                car.pass_bool = False
-
-                        else:
-                            print('escape!')
-                            car.x -= 4
-                        '''
-
-                        #while (car.passenger_check <= car.passenger_num):
-                        #while (len(passenger_list) <= car.passenger_num):
-                        while (make_count<= car.passenger_num):
-
-                            #print(car.passenger_check)
-                            car.stop(True)
-
-                            #if car.pass_bool:
-
-                            pass_bool = False
-
-                            for x in range(0, 25):
-                                if screen.get_at((car.drop_x,int(car.y)-x))!=BLUE:
-                                    pass_bool = True
-
                             if(pass_bool):
-                                passenger = make_passenger(car.drop_x, car.y-15)
-                                passenger.initial = car.y
+                                car.stop(True)
+                                passenger = make_passenger(int(car.x), int(car.y)-10)
+                                passenger.passenger_value = 0
                                 passenger_list.append(passenger)
-                                passenger.passenger_value = car.drop_val
-                                make_count += 1
-                                #car.pass_bool = False
-
+                                quick_val +=1
+                            
+                        '''
 
                         car.x -=4
 
@@ -409,6 +406,9 @@ def main():
 
                         car.stop(True)
 
+                        #for x in range(0, )
+
+                        '''
                         if car.pass_bool:
                             passenger = make_passenger(car.x-15, car.drop_y)
                             passenger.initial = car.x
@@ -416,8 +416,10 @@ def main():
                             passenger.passenger_value = car.drop_val
                             car.pass_bool = False
 
-                        car.y +=4
 
+                        '''
+
+                        car.y+=4
 
                 car.detect(2)
                 if car.accel_bool:
@@ -454,7 +456,7 @@ def main():
             #person coming from top leg
             elif person.personal_value == 1:
                 for y in range(10,25):
-                    for person_sweep in range(-4, 4):
+                    for person_sweep in range(-10, 10):
                         person_infront = screen.get_at(((int(person.x) + person_sweep), int(person.y) -y))
                         if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
                             person.stop()
@@ -466,7 +468,7 @@ def main():
             #person coming from left leg
             elif person.personal_value == 2:
                 for x in range(10,20):
-                    for person_sweep in range(-4, 4):
+                    for person_sweep in range(-10, 10):
                         person_infront = screen.get_at((int(person.x)-x, int(person.y)+person_sweep))
                         
                         if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
@@ -529,7 +531,7 @@ def main():
             pygame.draw.circle(screen, GREEN, [int(person.x), int(person.y)], 7)
 
         for passenger in passenger_list:
-            pygame.draw.circle(screen, BLUE, [int(passenger.x), int(passenger.y)], 8)
+            pygame.draw.circle(screen, passenger.color, [int(passenger.x), int(passenger.y)], 8)
         
  
         # --- Wrap-up, limit to 60 frames per second
