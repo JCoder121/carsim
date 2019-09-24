@@ -1,6 +1,7 @@
-#updated section 9/16/19 8:00PM
+#updated section 9/23/19 10:00PM
 #anichau and jeffchen
 #signed jeffrey chen
+
 
 import pygame
 import random
@@ -64,8 +65,10 @@ person_list = []
 passenger_list = []
 
 #set height and width of screen
+#screen_width, screen_height = screen.get_size()
+#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 size = [SCREEN_WIDTH, SCREEN_HEIGHT]
-screen = pygame.display.set_mode(size)
+#screen = pygame.display.set_mode(size)
 
 class Car:
     """
