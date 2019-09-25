@@ -1,4 +1,4 @@
-#updated section 9/23/19 10:00PM
+#updated section 9/24/19 6:00PM
 #anichau and jeffchen
 #signed jeffrey chen
 
@@ -6,6 +6,8 @@
 import pygame
 import random
 import math
+import sys
+import tkinter
 
 '''
 notes:
@@ -64,19 +66,23 @@ car_list = []
 person_list = []
 passenger_list = []
 
-#set height and width of screen
-#screen_width, screen_height = screen.get_size()
-#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-size = [SCREEN_WIDTH, SCREEN_HEIGHT]
-#screen = pygame.display.set_mode(size)
+#get screen size with tkinter
+root = tkinter.Tk()
+myscreen_width = root.winfo_screenwidth()
+myscreen_height = root.winfo_screenheight()
+
+#subtract on the height because there are borders and everything
+size = [myscreen_width, int(myscreen_height*0.95)]
+screen = pygame.display.set_mode(size)
+
 
 class Car:
     """
     Class to keep track of a car's location and speed
     """
     def __init__(self):
-        self.x = 1250
-        self.y = 700
+        self.x = myscreen_width *0.835
+        self.y = myscreen_height * 0.75
         self.speed = SPEED/2
         self.accel = 0
         self.color = RED
@@ -176,7 +182,6 @@ class Person:
         self.speed = PERSON_SPEED
         self.initial = 0
         self.personal_value = random.randint(0,2)
-        #self.personal_value = 1
    
     def stop(self):
         self.speed = 0
@@ -186,14 +191,13 @@ def make_car():
     Function to make a new, random car.
     """
     car = Car()                                                                      
-    #car.drop_val = random.randint(0,1)
-    car.drop_val = 0
+    car.drop_val = random.randint(0,1)
 
     if car.drop_val == 0:
-        car.drop_x = random.randint(77, 400) * 2
+        car.drop_x = random.randint(int(myscreen_width*.14), int(myscreen_width*.5))
 
     elif car.drop_val == 1:
-        car.drop_y = random.randint(62, 300) *2
+        car.drop_y = random.randint(int(myscreen_height*0.17), int(myscreen_height)*0.6)
 
     return car
 
@@ -204,21 +208,22 @@ def make_person():
 
     #right side
     if person.personal_value == 0:
-        person.x = 1130
+        person.x = myscreen_width*0.76
         person.initial = person.x
-        person.y = 400
+        person.y = myscreen_height*0.4
 
     #top level
     elif person.personal_value == 1:
-        person.x = 800
-        person.y = 230
+        #person.x = 800
+        person.x = myscreen_width * 0.4
+        person.y = myscreen_height*0.3
         person.initial = person.y
 
     #left side
     elif person.personal_value == 2:
-        person.x = 260
+        person.x = myscreen_width*0.2
         person.initial = person.x
-        person.y = 450
+        person.y = myscreen_height*0.5
 
     return person
  
@@ -236,7 +241,6 @@ def make_passenger(x, y, how_many):
         
         if pass_bool:
             passenger = Passenger()
-
             passenger.x = x
             passenger.y = y
             passenger.initial = y
@@ -250,6 +254,7 @@ def main():
     '''
     This is our main program.
     '''
+    #start program and give name
     pygame.init()
     pygame.display.set_caption("PHS Car Traffic")
  
@@ -281,7 +286,7 @@ def main():
 
                 for width in range(0, 100):
                     for height in range(0, 100):
-                        spawn_value = screen.get_at(( (1200 + width) , (650 + height) ))
+                        spawn_value = screen.get_at(( int(myscreen_width*0.835) , int(myscreen_height*0.75) ))
                         if spawn_value == RED:
                             spawn_bool = False
                             break
@@ -344,6 +349,7 @@ def main():
  
         # --- car logic
         for car in car_list:
+            print(car.y, myscreen_height, car.drop_y)
             #Move the car's center, check for position to move car where
             car.accel_bool = True
             car.pass_bool = True
@@ -354,24 +360,34 @@ def main():
             #cooldown?
 
             #print(car.waiting_time)
-
             #see if car is on right side, will go vertical up
-            if car.x > 155 and car.y > 100:
+
+            turn_left_val = 0.17
+            if car.x > myscreen_width/2 and car.y > myscreen_height*turn_left_val:
                 car.detect(0)
                 if car.accel_bool:
                     car.accelerate(0)
 
 
             #see if car is on top side, will go horizontal left 
-            elif car.x > 155 and car.y < 100:
+            elif car.x > myscreen_width*0.14 and car.y < myscreen_height*turn_left_val:
+                if car.drop_val ==0:
+                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
+                        car.stop(True)
+                        car.x-=4
+                        #^current dropoff function no passenger spawn
+
+                #further passenger spawn testing below
+
+                '''
                 
                 if car.drop_val == 0:
                     if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
                         
                         car.stop(True)
-                        make_passenger(int(car.x), int(car.y)-10, car.passenger_num)
+                        #make_passenger(int(car.x), int(car.y)-10, car.passenger_num)
                         #print('entered')
-                        '''
+                        
                         #for x in range(0, car.passenger_num):
                         quick_val = 0
                         pass_bool = True
@@ -390,25 +406,31 @@ def main():
                                 passenger_list.append(passenger)
                                 quick_val +=1
                             
-                        '''
+                        
 
                         car.x -=4
+                '''
 
                 car.detect(1) 
                 if car.accel_bool:                    
                     car.accelerate(1)
 
 
-            elif car.x < 155 and car.y > 90:
+            elif car.x < myscreen_width*0.14 and car.y > myscreen_height*0.02:
+
                 #see if car is on left side, will go vertical down
                 if car.drop_val == 1:
-                    if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y):    
+                    if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y):   
+                        car.stop(True) 
+                        car.y+=4
+                        #^working dropoff no passenger spawn
+
+                #passenger drop-off testing goes below
 
                         #for y in range(0, wait_list[random.randint(0,2)]):
                         #car.now = pygame.time.get_ticks()
 
-                        car.stop(True)
-
+                    
                         #for x in range(0, )
 
                         '''
@@ -422,15 +444,12 @@ def main():
 
                         '''
 
-                        car.y+=4
-
                 car.detect(2)
                 if car.accel_bool:
                     car.accelerate(2)
-
                                         
             #get rid of car if it crosses bottom line (memory management)
-            if car.y >(SCREEN_HEIGHT - 50) and car.x<(200):
+            if car.y >(myscreen_height*0.9) and car.x<(myscreen_height/2):
                 del car_list[0]
                 #fail safe to check if car going down is still red - not dropped off = bug and need to be fixed
                 if car.color == RED:
@@ -486,12 +505,10 @@ def main():
 
             #delete from left leg
             if((person.personal_value == 0) and (abs(person.initial - person.x) > PERSON_WALK)):
-                
                 del(person_list[0])
 
             #delete from top leg
             elif((person.personal_value == 1) and (abs(person.initial - person.y) > PERSON_WALK)):
-
                 del(person_list[0])
 
             #delete from right leg
@@ -520,13 +537,18 @@ def main():
         # Set the screen background
         screen.fill(WHITE)
         
+        road_width = 100
+        road_vert = myscreen_height*0.70
         #draw the road
-        pygame.draw.rect(screen, BLACK, (100, 50, 1200, 100))
-        pygame.draw.rect(screen, BLACK, (1200, 50, 100, 700))
-        pygame.draw.rect(screen, BLACK, (100, 50, 100, 700))
+        #template: (x, y, width, height)
+        #top side of road
+        pygame.draw.rect(screen, BLACK, (myscreen_width*0.1, 100, myscreen_width*0.75, road_width))
+        #right side of road
+        pygame.draw.rect(screen, BLACK, (myscreen_width*0.8, 100, road_width, road_vert))
+        #left side of road
+        pygame.draw.rect(screen, BLACK, (myscreen_width*0.1, 100, road_width, road_vert))
         
         # draw all moving objects
-        
         for car in car_list:
             pygame.draw.circle(screen, car.color, [int(car.x), int(car.y)], CAR_SIZE)
 
