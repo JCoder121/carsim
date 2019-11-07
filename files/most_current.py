@@ -2,7 +2,6 @@
 #anichau and jeffchen
 #signed jeffrey chen
 
-
 import pygame
 import random
 import math
@@ -68,7 +67,7 @@ passenger_list = []
 root = tkinter.Tk()
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-print(screen_width)
+#print(screen_width)
 
 #subtract on the height because there are borders and everything
 size = [screen_width, int(screen_height*0.95)]
@@ -82,6 +81,7 @@ class Car:
     def __init__(self):
         self.x = screen_width *0.865
         self.y = screen_height * 0.75
+        #testing for self.y = 300
         self.speed = SPEED/2
         self.accel = 0
         self.color = RED
@@ -96,10 +96,7 @@ class Car:
         self.drop_val = -1
         self.drop_x = 0
         self.drop_y = 0
-
-        self.drop_bool = True
         self.accel_bool = True
-        self.is_dropped = False
         self.pass_bool = True
 
 
@@ -169,6 +166,7 @@ class Passenger:
         self.passenger_value = -1
         self.speed = PERSON_SPEED
         self.color = BLUE
+        self.top = True
 
 class Person:
     """
@@ -190,7 +188,8 @@ def make_car():
     Function to make a new, random car.
     """
     car = Car()                                                                      
-    car.drop_val = random.randint(0,1)
+    #car.drop_val = random.randint(0,1)
+    car.drop_val = 0
 
     if car.drop_val == 0:
         car.drop_x = random.randint(int(screen_width*.14), int(screen_width*.5))
@@ -228,24 +227,15 @@ def make_person():
  
 
 #make_passenger(car.drop_x, car.y -15)
-def make_passenger(x, y, how_many):
+def make_passenger(x, y):
+    passenger = Passenger()
+    passenger.x = x
+    passenger.y = y
+    passenger.initial = y
+    passenger.top = True
+    passenger_list.append(passenger)
 
-    pass_bool = True
-    for passengers in range(0, how_many):
-        #car.stop(True)
-        for width in range(-5,5):
-            for height in range(0, 25):
-                if screen.get_at((x+width, y+height)) == BLUE:
-                    pass_bool = False
-        
-        if pass_bool:
-            passenger = Passenger()
-            passenger.x = x
-            passenger.y = y
-            passenger.initial = y
-            passenger_list.append(passenger)
-
-    #return passenger
+    return passenger
 
     #make passenger students that exit from the dropped off cars
  
@@ -316,7 +306,7 @@ def main():
                     person_list.append(person)
             '''
         
-        '''
+        
         #random car spawn
         random_car = random.randint(1,RANDOMPARAM)
 
@@ -335,7 +325,7 @@ def main():
         #and len(car_list)<4: - len car list to restrict car number at once on screen
             car = make_car()
             car_list.append(car)
-        '''
+        
 
         
         #random pedestrian spawn
@@ -370,15 +360,25 @@ def main():
             #see if car is on top side, will go horizontal left 
             elif car.x > screen_width*0.14 and car.y < screen_height*turn_left_val:
                 if car.drop_val ==0:
+                    #while(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
                     if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
-                        car.stop(True)
-                        car.x-=4
-                        #^current dropoff function no passenger spawn
+                        #car.stop(True)
+                        
+
+                        for x in range(0, car.passenger_num):
+                            car.stop(True)
+                            make_passenger(int(car.x), int(car.y))
+                            #passenger.top = True
+
+                        car.x -= 4
+                        
+                #car.x-=4
+                #^current dropoff function no passenger spawn
 
                 #further passenger spawn testing below
 
-                '''
                 
+                '''
                 if car.drop_val == 0:
                     if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
                         
@@ -404,11 +404,10 @@ def main():
                                 passenger_list.append(passenger)
                                 quick_val +=1
                             
-                        
-
+                    
                         car.x -=4
                 '''
-
+                
                 car.detect(1) 
                 if car.accel_bool:                    
                     car.accelerate(1)
@@ -420,6 +419,7 @@ def main():
                 if car.drop_val == 1:
                     if(int(car.y)==car.drop_y) or (int(car.y-1)==car.drop_y):   
                         car.stop(True) 
+                        #passenger.top = False
                         car.y+=4
                         #^working dropoff no passenger spawn
 
@@ -431,16 +431,17 @@ def main():
                     
                         #for x in range(0, )
 
-                        '''
-                        if car.pass_bool:
-                            passenger = make_passenger(car.x-15, car.drop_y)
-                            passenger.initial = car.x
-                            passenger_list.append(passenger)
-                            passenger.passenger_value = car.drop_val
-                            car.pass_bool = False
+                
+                '''
+                if car.pass_bool:
+                    passenger = make_passenger(car.x-15, car.drop_y)
+                    passenger.initial = car.x
+                    passenger_list.append(passenger)
+                    passenger.passenger_value = car.drop_val
+                    car.pass_bool = False
 
 
-                        '''
+                '''
 
                 car.detect(2)
                 if car.accel_bool:
@@ -519,6 +520,14 @@ def main():
             #need distance check to erase
             
             #top leg passenger
+            if passenger.top:
+                passenger.y += -PERSON_SPEED/2
+            '''
+            if passenger.y<(screen_height*0.02):
+                passenger.y += -PERSON_SPEED/2
+            '''
+
+            '''
             if passenger.passenger_value == 0:
                 passenger.y += -PERSON_SPEED/2
                 if (abs(passenger.initial - passenger.y) > 60):
@@ -529,7 +538,7 @@ def main():
                 passenger.x += -PERSON_SPEED/2
                 if(abs(passenger.initial - passenger.x) > 60):
                     del(passenger_list[0])
-
+            '''
 
         # --- Drawing
         # Set the screen background
@@ -556,7 +565,6 @@ def main():
         for passenger in passenger_list:
             pygame.draw.circle(screen, passenger.color, [int(passenger.x), int(passenger.y)], 8)
         
- 
         # --- Wrap-up, limit to 60 frames per second
         clock.tick(60)
  

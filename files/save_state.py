@@ -209,7 +209,7 @@ def make_passenger(x, y):
     passenger.x = x
     passenger.y = y
     passenger.initial = 0
-    return passenger
+    #return passenger
 
     #make passenger students that exit from the dropped off cars
  
