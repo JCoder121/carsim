@@ -9,6 +9,9 @@
 import pygame
 import random
 import math  
+import os.path
+import time
+from time import gmtime, strftime
 
 '''
 notes:
@@ -29,8 +32,6 @@ work on passenger
 drop off list of times to wait - access that through the rand int
 
 
-
-
 COMMON LOCATIONS
 '''
 
@@ -46,17 +47,20 @@ YELLOW = (255, 255, 0)
 SCREEN_WIDTH = 1430
 SCREEN_HEIGHT = 850
 CAR_SIZE = 15
-SPEED = 1
+SPEED = 0.01
 PERSON_SPEED = 1.5
 PERSON_WALK = 200
-MAXSPEED = 2
-ACCEL = 0.03
-RANDOMPARAM = 10
+MAXSPEED = 1.5
+#MAXSPEED = 10
+#ACCEL = 1
+ACCEL = 0.1
+RANDOMPARAM = 8
 INFRONT = 35
 SWEEP = 20
-WAITTIME = 10000
+
+WAITTIME = 100000
 #change dt for acceleration change, bigger = faster accel
-dt = 0.006
+dt = 0.0006
 
 #set height and width of screen
 size = [SCREEN_WIDTH, SCREEN_HEIGHT]
@@ -69,6 +73,9 @@ class Car:
     def __init__(self):
         self.x = 1250
         self.y = 700
+        #below is spawn cars close to bottom
+        #self.x = 150
+        #self.y = 600
         self.speed = SPEED/2
         self.accel = 0
         self.color = RED
@@ -141,12 +148,6 @@ class Car:
 
         self.accel+= ACCEL
 
-class Passenger:
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.speed = PERSON_SPEED
-
 class Person:
     """
     Class to make person randomly spawn in 3+ randomly
@@ -168,7 +169,8 @@ def make_car():
     Function to make a new, random car.
     """
     car = Car()                                                                      
-    car.drop_val = random.randint(0,1)
+    #car.drop_val = random.randint(0,1)
+    car.drop_val = 0
 
     if car.drop_val == 0:
         car.drop_x = random.randint(77, 400) * 2
@@ -185,6 +187,7 @@ def make_person():
 
     #right side
     if person.personal_value == 0:
+        #pass
         person.x = 1130
         person.initial = person.x
         person.y = 400
@@ -203,16 +206,6 @@ def make_person():
 
     return person
  
-def make_passenger(x, y):
-    passenger = Passenger()
-
-    passenger.x = x
-    passenger.y = y
-    passenger.initial = 0
-    #return passenger
-
-    #make passenger students that exit from the dropped off cars
- 
 def main():
     '''
     This is our main program.
@@ -222,19 +215,21 @@ def main():
  
     # Loop until the user clicks the close button.
     done = False
+    hundred_cars_bool = False
  
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
  
     car_list = []
     person_list = []
-    passenger_list = []
     wait_list = [100,200,3000000]
+    car_count = 0
 
     car = make_car()
     car_list.append(car)
-    first_cross = make_person()
-    person_list.append(first_cross)
+    #first_cross = make_person()
+    #person_list.append(first_cross)
+    my_seconds = 0
  
     # -------- Main Program Loop -----------
     while not done:
@@ -252,6 +247,7 @@ def main():
                 for width in range(0, 100):
                     for height in range(0, 100):
                         spawn_value = screen.get_at(( (1200 + width) , (650 + height) ))
+                        
                         if spawn_value == RED:
                             spawn_bool = False
                             break
@@ -305,15 +301,18 @@ def main():
         random_ped = random.randint(1, RANDOMPARAM+100)
         #random_ped = 3
         if (random_ped == 3):
-            person = make_person()
-            person_list.append(person)
+            pass
+            #see how this goes 
+            #person = make_person()
+            #person_list.append(person)
         
  
         # --- car logic
         for car in car_list:
             #Move the car's center, check for position to move car where
             car.accel_bool = True
-            car.pass_bool
+            #car.is_dropped_off = False
+            
 
             #see if car is on right side, will go vertical up
             if car.x > 155 and car.y > 100:
@@ -323,20 +322,22 @@ def main():
 
 
             #see if car is on top side, will go horizontal left 
+            
             elif car.x > 155 and car.y < 100:
                 if car.drop_val == 0:
-                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x):          
+                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x): 
+                        car.stop(True)
+                        car.x -= 4
+                        '''
+                        #while small_timer < 5:         
                         for x in range(0, WAITTIME):
                             car.stop(True)
+                            #print(small_timer)
+                            #small_timer+=1
+                        '''
 
-                        car.x -= 4
+                        #car.x -= 4
 
-                        if car.pass_bool:
-                            passenger = make_passenger(car.drop_x, car.y-15)
-                            passenger.initial = car.y
-                            passenger_list.append(passenger)
-                            passenger.passenger_value = car.drop_val
-                            car.pass_bool = False
 
 
                 car.detect(1) 
@@ -352,15 +353,7 @@ def main():
                         for y in range(0, wait_list[random.randint(0,2)]):
                             car.stop(True)
 
-                        car.y +=4
-
-                        if car.pass_bool:
-                            passenger = make_passenger(car.x-15, car.drop_y)
-                            passenger.initial = car.x
-                            passenger_list.append(passenger)
-                            passenger.passenger_value = car.drop_val
-                            car.pass_bool = False
-
+                        #car.y +=4
 
                 car.detect(2)
                 if car.accel_bool:
@@ -370,11 +363,21 @@ def main():
             #get rid of car if it crosses bottom line (memory management)
             if car.y >(SCREEN_HEIGHT - 50) and car.x<(200):
                 del car_list[0]
+                car_count+=1
+                print("cars crossed:", car_count)
+                cars_compare = 100
+                if car_count == cars_compare:
+                    hundred_cars_bool = True
+                    done = True
+
                 #fail safe to check if car going down is still red - not dropped off = bug and need to be fixed
+                
+                '''
+                #will go through this later
                 if car.color == RED:
                     print("car not dropped off, something wrong")
                     done = True
-
+                '''
 
         #pedestrian logic
         for person in person_list:
@@ -437,23 +440,6 @@ def main():
                 del(person_list[0])
 
 
-        #exiting passenger logic
-        for passenger in passenger_list:
-            #need distance check to erase
-            
-            #top leg passenger
-            if passenger.passenger_value == 0:
-                passenger.y += -PERSON_SPEED/2
-                if (abs(passenger.initial - passenger.y) > 60):
-                    del(passenger_list[0])
-                
-            #left leg passenger
-            elif passenger.passenger_value == 1:
-                passenger.x += -PERSON_SPEED/2
-                if(abs(passenger.initial - passenger.x) > 60):
-                    del(passenger_list[0])
-
-
         # --- Drawing
         # Set the screen background
         screen.fill(WHITE)
@@ -470,19 +456,46 @@ def main():
 
         for person in person_list:
             pygame.draw.circle(screen, GREEN, [int(person.x), int(person.y)], 7)
-
-        for passenger in passenger_list:
-            pygame.draw.circle(screen, BLUE, [int(passenger.x), int(passenger.y)], 8)
         
  
         # --- Wrap-up, limit to 60 frames per second
         clock.tick(60)
+        my_seconds+=1
+        mytime = my_seconds/60
+        #print(int(mytime))
+        
  
         # update screen with newly drawn
         pygame.display.flip()
  
     # Close everything 
     pygame.quit()
+    if hundred_cars_bool:
+        body_print = "\n\nseconds needed for all " + str(car_count) + " cars to pass: %0.2f seconds" % mytime
+        print(body_print)
+
+        real_time = strftime("%Y-%m-%d %H-%M-%S", gmtime())
+        save_path = "/Users/jeffrey/Documents/Github/carsim/files/testing"
+        filestring = "rawdata- " + str(real_time) + ".txt"
+        complete_name = os.path.join(save_path, filestring)
+        
+        f = open(complete_name, "a+")
+        #f = open(complete_name, "w")
+        #f = open("text.txt", "a+")
+
+        #various hundred car trials below
+        #f.write("\nthis is first go")
+        f.write("Time Elapsed for 100 Cars, No Pedestrians")
+        #write in the date or something else as well
+        #f.write("Time Elapsed for 100 Cars, Randomly Spawned Pedestrians")
+        #f.write("Time Elapsed for 100 Cars, Pedestrians in 10 Second Intervals")
+        #f.write("Time Elapsed for 100 Cars, Pedestrians in 20 Second Intervals")
+        #f.write("Time Elapsed for 100 Cars, Pedestrians in 30 Second Intervals")
+
+        f.write(body_print)
+        f.write("\n\n=================================================")
+        f.close()
+
  
 if __name__ == "__main__":
     main()

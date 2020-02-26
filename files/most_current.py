@@ -45,11 +45,12 @@ YELLOW = (255, 255, 0)
 
 #define other variables 
 CAR_SIZE = 15
-SPEED = 1
+SPEED = 5
 PERSON_SPEED = 1.5
 PERSON_WALK = 200
 MAXSPEED = 2
-ACCEL = 0.03
+#ACCEL = 0.03
+ACCEL = 1
 RANDOMPARAM = 10
 INFRONT = 35
 SWEEP = 20
@@ -57,8 +58,8 @@ SWEEP = 20
 # wait time is currently unncessary
 #WAITTIME = 10000
 #change dt for acceleration change, bigger = faster accel
-dt = 0.004
-#dt = 1
+#dt = 0.004
+dt = 1
 car_list = []
 person_list = []
 passenger_list = []
@@ -67,6 +68,7 @@ passenger_list = []
 root = tkinter.Tk()
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
+print(screen_height)
 #print(screen_width)
 
 #subtract on the height because there are borders and everything
@@ -188,8 +190,8 @@ def make_car():
     Function to make a new, random car.
     """
     car = Car()                                                                      
-    #car.drop_val = random.randint(0,1)
-    car.drop_val = 0
+    car.drop_val = random.randint(0,1)
+    #car.drop_val = 0
 
     if car.drop_val == 0:
         car.drop_x = random.randint(int(screen_width*.14), int(screen_width*.5))
@@ -329,7 +331,7 @@ def main():
 
         
         #random pedestrian spawn
-        random_ped = random.randint(1, RANDOMPARAM+100)
+        random_ped = random.randint(1, RANDOMPARAM+30)
         #random_ped = 3
         if (random_ped == 3):
             person = make_person()
@@ -350,70 +352,29 @@ def main():
             #print(car.waiting_time)
             #see if car is on right side, will go vertical up
 
-            turn_left_val = 0.17
+            turn_left_val = 0.19
             if car.x > screen_width/2 and car.y > screen_height*turn_left_val:
                 car.detect(0)
                 if car.accel_bool:
                     car.accelerate(0)
+               
 
 
             #see if car is on top side, will go horizontal left 
-            elif car.x > screen_width*0.14 and car.y < screen_height*turn_left_val:
+            elif car.x > screen_width*0.13 and car.y < screen_height*turn_left_val:
+
                 if car.drop_val ==0:
                     #while(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
                     if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
-                        #car.stop(True)
-                        
-
-                        for x in range(0, car.passenger_num):
-                            car.stop(True)
-                            make_passenger(int(car.x), int(car.y))
-                            #passenger.top = True
-
-                        car.x -= 4
-                        
-                #car.x-=4
-                #^current dropoff function no passenger spawn
-
-                #further passenger spawn testing below
-
-                
-                '''
-                if car.drop_val == 0:
-                    if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x) or (int(car.x+1)==car.drop_x):  
-                        
                         car.stop(True)
-                        #make_passenger(int(car.x), int(car.y)-10, car.passenger_num)
-                        #print('entered')
-                        
-                        #for x in range(0, car.passenger_num):
-                        quick_val = 0
-                        pass_bool = True
-                        #print(pass_bool)
-                        while (quick_val <= car.passenger_num):
-                            car.stop(True)
-                            for width in range(-5, 5):
-                                for y in range(0, 30):
-                                    if screen.get_at((int(car.x) + width, int(car.y) - y)) != BLUE:
-                                        pass_bool = True
-                            
-                            if(pass_bool):
-                                car.stop(True)
-                                passenger = make_passenger(int(car.x), int(car.y)-10)
-                                passenger.passenger_value = 0
-                                passenger_list.append(passenger)
-                                quick_val +=1
-                            
-                    
-                        car.x -=4
-                '''
+                        car.x -= 4
+
                 
-                car.detect(1) 
                 if car.accel_bool:                    
                     car.accelerate(1)
 
 
-            elif car.x < screen_width*0.14 and car.y > screen_height*0.02:
+            elif car.x < screen_width*0.13 and car.y > screen_height*0.02:
 
                 #see if car is on left side, will go vertical down
                 if car.drop_val == 1:
