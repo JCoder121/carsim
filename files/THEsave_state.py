@@ -468,7 +468,7 @@ def main():
         # update screen with newly drawn
         pygame.display.flip()
  
-    # Close everything 
+    # Close everything
     pygame.quit()
     if hundred_cars_bool:
         body_print = "\n\nseconds needed for all " + str(car_count) + " cars to pass: %0.2f seconds" % mytime
