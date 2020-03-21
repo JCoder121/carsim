@@ -2,10 +2,10 @@
 #while making more edits on most current
 #here will be the last fully working most_current.py file
 
-#updated section 9/16/19 8:00PM
+#updated section 3/20/20 8:10PM
 #anichau and jeffchen
 #signed jeffrey chen
-
+#make the cars spawn closer together with less in
 import pygame
 import random
 import math  
@@ -47,13 +47,14 @@ YELLOW = (255, 255, 0)
 SCREEN_WIDTH = 1430
 SCREEN_HEIGHT = 850
 CAR_SIZE = 15
-SPEED = 0.01
+SPEED = 0.1
+#SPEED = 0.01
 PERSON_SPEED = 1.5
 PERSON_WALK = 200
 MAXSPEED = 1.5
 #MAXSPEED = 10
-#ACCEL = 1
-ACCEL = 0.1
+ACCEL = 0.5
+#ACCEL = 0.1
 RANDOMPARAM = 8
 INFRONT = 35
 SWEEP = 20
@@ -77,6 +78,7 @@ class Car:
         #self.x = 150
         #self.y = 600
         self.speed = SPEED/2
+        #self.speed = 3
         self.accel = 0
         self.color = RED
 
@@ -173,7 +175,7 @@ def make_car():
     car.drop_val = 0
 
     if car.drop_val == 0:
-        car.drop_x = random.randint(77, 400) * 2
+        car.drop_x = random.randint(77, 250) * 2
 
     elif car.drop_val == 1:
         car.drop_y = random.randint(62, 300) *2
@@ -284,7 +286,7 @@ def main():
         #view finding of rectangle to make sure nearest car is out of area
         spawn_bool = True
         for width in range(0, 100):
-            for height in range(0, 100):
+            for height in range(0, 50):
                 spawn_value = screen.get_at(( (1200 + width) , (650 + height) ))
                 if spawn_value == RED:
                     spawn_bool = False
@@ -324,10 +326,11 @@ def main():
             #see if car is on top side, will go horizontal left 
             
             elif car.x > 155 and car.y < 100:
+                the_wait_list = [0.005, 0.075, 0.01]
                 if car.drop_val == 0:
                     if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x): 
                         car.stop(True)
-                        car.x -= 4
+                        car.x -= the_wait_list[random.randint(0,2)]
                         '''
                         #while small_timer < 5:         
                         for x in range(0, WAITTIME):
@@ -364,8 +367,10 @@ def main():
             if car.y >(SCREEN_HEIGHT - 50) and car.x<(200):
                 del car_list[0]
                 car_count+=1
-                print("cars crossed:", car_count)
-                cars_compare = 100
+                #print("cars crossed:", car_count)
+                print("a")
+                #cars_compare = 100
+                cars_compare = 1
                 if car_count == cars_compare:
                     hundred_cars_bool = True
                     done = True
