@@ -43,8 +43,6 @@ ACCEL = 0.5
 RANDOMPARAM = 8
 INFRONT = 35
 SWEEP = 20
-
-WAITTIME = 100000
 #change dt for acceleration change, bigger = faster accel
 dt = 0.0006
 
@@ -68,18 +66,14 @@ class Car:
 
         self.drop_val = -1
         self.drop_x = 0
-        self.drop_y = 0
-
         self.drop_bool = True
         self.accel_bool = True
-        self.is_dropped = False
-        self.pass_bool = True
 
 
-    def stop(self, the_drop_bool):
+    def stop(self, should_drop):
         self.speed = 0
         self.accel = 0
-        if the_drop_bool:
+        if should_drop:
             self.color = YELLOW        
 
     def detect(self, detect_var):
@@ -117,7 +111,7 @@ class Car:
             #top
             elif var1 == 1:
                 self.x += -MAXSPEED
-            #lieft
+            #left
             elif var1 == 2:
                 self.y += MAXSPEED
 
@@ -208,6 +202,15 @@ def main():
     #first_cross = make_person()
     #person_list.append(first_cross)
     my_seconds = 0
+    '''
+    real_time = strftime("%Y-%m-%d %H-%M-%S", gmtime())
+    save_path = "/Users/jeffrey/Documents/Github/carsim/files/testing_current"
+    filestring = "rawdata- " + str(real_time) + ".txt"
+    complete_name = os.path.join(save_path, filestring)
+    
+    f = open(complete_name, "a+")
+    '''
+
  
     # -------- Main Program Loop -----------
     while not done:
@@ -218,6 +221,7 @@ def main():
             #on sublime, use below    
             if event.type == pygame.QUIT:
                 done = True
+                f.close()
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 spawn_bool = True
@@ -280,7 +284,6 @@ def main():
         #random_ped = 3
         if (random_ped == 3):
             pass
-            #see how this goes 
             #person = make_person()
             #person_list.append(person)
         
@@ -302,17 +305,11 @@ def main():
             
             elif car.x > 155 and car.y < 100:
                 the_wait_list = [0.005, 0.075, 0.01]
-                if(int(car.x)==car.drop_x) or (int(car.x-1)==car.drop_x): 
+                #if(int(car.x)==car.drop) or (int(car.x-1)==car.drop_x): 
+                if int(car.x) in range(car.drop-2, car.drop+2):
                     car.stop(True)
                     car.x -= the_wait_list[random.randint(0,2)]
-                    '''
-                    #while small_timer < 5:         
-                    for x in range(0, WAITTIME):
-                        car.stop(True)
-                        #print(small_timer)
-                        #small_timer+=1
-                    '''
-                    #car.x -= 4
+                
 
                 car.detect(1) 
                 if car.accel_bool:                    
@@ -329,17 +326,49 @@ def main():
             if car.y >(SCREEN_HEIGHT - 50) and car.x<(200):
                 del car_list[0]
                 car_count+=1
-                #print("cars crossed:", car_count)
-                print("a")
-                #cars_compare = 100
+                print("cars crossed:", car_count)
+                #print("a")
 
-                #LOOK HERE ANICHAU
                 #currently, on every car pass, write time needed
                 #if writing time only for all 100 to pass, change cars_compare to 100
                 cars_compare = 100
                 if car_count == cars_compare:
-                    hundred_cars_bool = True
-                    done = True
+                    #hundred_cars_bool = True
+                    real_time = strftime("%Y-%m-%d %H-%M-%S", gmtime())
+                    save_path = "/Users/jeffrey/Documents/Github/carsim/files/testing_current"
+                    filestring = "rawdata- " + str(real_time) + ".txt"
+                    complete_name = os.path.join(save_path, filestring)
+                    
+                    f = open(complete_name, "a+")
+                    body_print = "\n\nseconds needed for all " + str(car_count) + " cars to pass: %0.2f seconds" % mytime
+                    print(body_print)
+                    #various hundred car trials below
+                    #f.write("\nthis is first go")
+                    f.write("\nTime Elapsed for 100 Cars, No Pedestrians")
+                    #write in the date or something else as well
+                    #f.write("Time Elapsed for 100 Cars, Randomly Spawned Pedestrians")
+                    #f.write("Time Elapsed for 100 Cars, Pedestrians in 10 Second Intervals")
+                    #f.write("Time Elapsed for 100 Cars, Pedestrians in 20 Second Intervals")
+                    #f.write("Time Elapsed for 100 Cars, Pedestrians in 30 Second Intervals")
+
+                    f.write(body_print)
+                    f.write("\n\n=================================================")
+                    f.close()
+
+                    #done = True
+
+                    #FIX NO SUCH FILE OR DIRECTORY SO IT DOESNT WRITE
+                    #delete all cars already created and write new data
+                    
+
+
+                    car_list.clear()
+                    car_count = 0
+                    my_seconds = 0
+                    
+
+
+                    #hundred_cars_bool = False
 
                 #fail safe to check if car going down is still red - not dropped off = bug and need to be fixed
                 
@@ -432,42 +461,13 @@ def main():
         clock.tick(60)
         my_seconds+=1
         mytime = my_seconds/60
-        #print(int(mytime))
         
         # update screen with newly drawn
         pygame.display.flip()
  
     # Close everything
     pygame.quit()
-    if hundred_cars_bool:
-        body_print = "\n\nseconds needed for all " + str(car_count) + " cars to pass: %0.2f seconds" % mytime
-        print(body_print)
-
-        real_time = strftime("%Y-%m-%d %H-%M-%S", gmtime())
-
-        #LOOK HERE ANICHAU
-
-        save_path = "/Users/jeffrey/Documents/Github/carsim/files/testing"
-        filestring = "rawdata- " + str(real_time) + ".txt"
-        complete_name = os.path.join(save_path, filestring)
-        
-        f = open(complete_name, "a+")
-        #f = open(complete_name, "w")
-        #f = open("text.txt", "a+")
-
-        #various hundred car trials below
-        #f.write("\nthis is first go")
-        f.write("Time Elapsed for 100 Cars, No Pedestrians")
-        #write in the date or something else as well
-        #f.write("Time Elapsed for 100 Cars, Randomly Spawned Pedestrians")
-        #f.write("Time Elapsed for 100 Cars, Pedestrians in 10 Second Intervals")
-        #f.write("Time Elapsed for 100 Cars, Pedestrians in 20 Second Intervals")
-        #f.write("Time Elapsed for 100 Cars, Pedestrians in 30 Second Intervals")
-
-        f.write(body_print)
-        f.write("\n\n=================================================")
-        f.close()
-
+    f.close()
  
 if __name__ == "__main__":
     main()
