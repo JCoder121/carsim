@@ -35,11 +35,14 @@ YELLOW = (255, 255, 0)
 SCREEN_WIDTH = 1430
 SCREEN_HEIGHT = 850
 CAR_SIZE = 15
-SPEED = 0.1
+#SPEED = 0.1
+SPEED = 100
 PERSON_SPEED = 1.5
 PERSON_WALK = 200
-MAXSPEED = 1.5
-ACCEL = 0.5
+MAXSPEED = 14
+#MAXSPEED = 1.5
+#ACCEL = 0.5
+ACCEL = 5
 RANDOMPARAM = 8
 INFRONT = 35
 SWEEP = 20
@@ -331,7 +334,8 @@ def main():
 
                 #currently, on every car pass, write time needed
                 #if writing time only for all 100 to pass, change cars_compare to 100
-                cars_compare = 100
+                cars_compare = 10
+                #cars_compare = 100
                 if car_count == cars_compare:
                     #hundred_cars_bool = True
                     real_time = strftime("%Y-%m-%d %H-%M-%S", gmtime())
@@ -340,19 +344,20 @@ def main():
                     complete_name = os.path.join(save_path, filestring)
                     
                     f = open(complete_name, "a+")
-                    body_print = "\n\nseconds needed for all " + str(car_count) + " cars to pass: %0.2f seconds" % mytime
+                    #body_print = "\n\nseconds needed for all " + str(car_count) + " cars to pass: " + str(int(mytime)) + " seconds"
+                    body_print = "\n\nseconds needed for all cars to pass: \n" + str(int(mytime))
                     print(body_print)
                     #various hundred car trials below
                     #f.write("\nthis is first go")
-                    f.write("\nTime Elapsed for 100 Cars, No Pedestrians")
+                    f.write("\nTime Elapsed for Hundred Cars, No Pedestrians")
                     #write in the date or something else as well
-                    #f.write("Time Elapsed for 100 Cars, Randomly Spawned Pedestrians")
-                    #f.write("Time Elapsed for 100 Cars, Pedestrians in 10 Second Intervals")
-                    #f.write("Time Elapsed for 100 Cars, Pedestrians in 20 Second Intervals")
-                    #f.write("Time Elapsed for 100 Cars, Pedestrians in 30 Second Intervals")
+                    #f.write("Time Elapsed for Hundred Cars, Randomly Spawned Pedestrians")
+                    #f.write("Time Elapsed for Hundred Cars, Pedestrians in Ten Second Intervals")
+                    #f.write("Time Elapsed for Hundred Cars, Pedestrians in Twenty Second Intervals")
+                    #f.write("Time Elapsed for Hundred Cars, Pedestrians in Thirty Second Intervals")
 
                     f.write(body_print)
-                    f.write("\n\n=================================================")
+                    f.write("\n\n~~")
                     f.close()
 
                     #done = True
