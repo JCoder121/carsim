@@ -1,0 +1,5 @@
+Time Elapsed for 100 Cars, No Pedestrians
+
+Minutes needed for 100 cars to pass: 10.7141
+
+=================================================
