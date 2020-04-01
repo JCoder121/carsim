@@ -151,8 +151,12 @@ class Person:
         self.y = 0
         self.speed = PERSON_SPEED
         self.initial = 0
-        self.personal_value = random.randint(0,2)
+        self.personal_value = random.randint(0,1)
+        self.person = 5
+
+        #CHANGE THIS LATERRRR
         #self.personal_value = 1
+        self.start_time_bool = True
    
     def stop(self):
         self.speed = 0
@@ -166,26 +170,27 @@ def make_car():
 
     return car
 
+'''
+def person_interval(time):
+
+    if car.start_time_bool:
+        start = pygame.time.get_ticks() / 1000
+        car.start_time_bool = False
+'''
+
 
 def make_person():
     #person that crosses the street/simulate a sidewalk, 3 possible areas where pedestrians can spawn
     person = Person()
 
-    #right side
-    if person.personal_value == 0:
-        #pass
-        person.x = 1130
-        person.initial = person.x
-        person.y = 400
-
     #top level
-    elif person.personal_value == 1:
+    if person.personal_value == 0:
         person.x = 800
         person.y = 230
         person.initial = person.y
 
     #left side
-    elif person.personal_value == 2:
+    elif person.personal_value == 1:
         person.x = 260
         person.initial = person.x
         person.y = 450
@@ -212,8 +217,8 @@ def main():
 
     car = make_car()
     car_list.append(car)
-    #first_cross = make_person()
-    #person_list.append(first_cross)
+    first_cross = make_person()
+    person_list.append(first_cross)
     my_seconds = 0
     start_seconds = 0
     start_seconds_bool = True
@@ -271,19 +276,34 @@ def main():
             #- len car list to restrict car number at once on screen
             car = make_car()
             car_list.append(car)
-        
-        
 
         
-        #random pedestrian spawn
+        #random pedestrian spawn TO EDIT
+        person_time = int((pygame.time.get_ticks() / 1000))
+        time_mod = person_time % 10
+        person_counter = 0
+        
+        person_spawn_bool = True
+        for search in range(0, 30):
+            spawn_value_left = screen.get_at(( (260 - search) , (500)))
+            spawn_value_top = screen.get_at((804, (245 - search)))
+            if spawn_value_left == GREEN or spawn_value_top == GREEN:
+                person_spawn_bool = False
+                break
+
+        if person_spawn_bool and person_counter < 10:
+            person = make_person()
+            person_list.append(person)
+            person_counter += 1
+
+
         random_ped = random.randint(1, RANDOMPARAM+100)
         #random_ped = 3
         if (random_ped == 3):
             pass
             #see how this goes 
             #person = make_person()
-            #person_list.append(person)
-        
+            #person_list.append(person)        
  
         # --- car logic
         for car in car_list:
@@ -370,22 +390,10 @@ def main():
 
             person_bool = True
 
-            if person.personal_value == 0:
-                #simple personobj detection:
-                #coming from right leg
-                for x in range(10, 25):
-                    for person_sweep in range(-4, 4):
-                        person_infront = screen.get_at(((int(person.x)+x), int(person.y) + person_sweep))
-                        if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
-                            person.stop()
-                            person_bool = False
-
-                if person_bool:
-                    person.x += PERSON_SPEED
 
             #person coming from top leg
-            elif person.personal_value == 1:
-                for y in range(10,25):
+            if person.personal_value == 0:
+                for y in range(10,20):
                     for person_sweep in range(-4, 4):
                         person_infront = screen.get_at(((int(person.x) + person_sweep), int(person.y) -y))
                         if person_infront==RED or person_infront==GREEN or person_infront==YELLOW:
@@ -396,7 +404,7 @@ def main():
                     person.y -= PERSON_SPEED
 
             #person coming from left leg
-            elif person.personal_value == 2:
+            elif person.personal_value == 1:
                 for x in range(10,20):
                     for person_sweep in range(-4, 4):
                         person_infront = screen.get_at((int(person.x)-x, int(person.y)+person_sweep))
@@ -410,19 +418,15 @@ def main():
 
             #always check if person has walked PERSON_WALK pixels, then erase from list (memory management)
 
-            #delete from left leg
-            if((person.personal_value == 0) and (abs(person.initial - person.x) > PERSON_WALK)):
-                
-                del(person_list[0])
-
             #delete from top leg
-            elif((person.personal_value == 1) and (abs(person.initial - person.y) > PERSON_WALK)):
-
+            if((person.personal_value == 0) and (abs(person.initial - person.y) > PERSON_WALK)):
                 del(person_list[0])
 
             #delete from right leg
-            elif((person.personal_value== 2) and (abs(person.initial - person.x) > PERSON_WALK)):
+            elif((person.personal_value== 1) and (abs(person.initial - person.x) > PERSON_WALK)):
                 del(person_list[0])
+
+
 
 
         # --- Drawing
