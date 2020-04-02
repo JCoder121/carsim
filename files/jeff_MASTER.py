@@ -217,8 +217,8 @@ def main():
 
     car = make_car()
     car_list.append(car)
-    first_cross = make_person()
-    person_list.append(first_cross)
+    #first_cross = make_person()
+    #person_list.append(first_cross)
     my_seconds = 0
     start_seconds = 0
     start_seconds_bool = True
@@ -280,7 +280,7 @@ def main():
         
         #random pedestrian spawn TO EDIT
         person_time = int((pygame.time.get_ticks() / 1000))
-        time_mod = person_time % 10
+        time_mod = person_time % 5
         person_counter = 0
         
         person_spawn_bool = True
@@ -291,10 +291,11 @@ def main():
                 person_spawn_bool = False
                 break
 
-        if person_spawn_bool and person_counter < 10:
-            person = make_person()
-            person_list.append(person)
-            person_counter += 1
+        if person_spawn_bool and time_mod == 0:
+            for x in range(0,20):
+                person = make_person()
+                person_list.append(person)
+            #person_counter += 1
 
 
         random_ped = random.randint(1, RANDOMPARAM+100)
