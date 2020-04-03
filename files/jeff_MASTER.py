@@ -53,38 +53,14 @@ dt = 0.0006
 size = [SCREEN_WIDTH, SCREEN_HEIGHT]
 screen = pygame.display.set_mode(size)
 
-def obj_drop_off(obj):
+#pedestrian spawner variables needed
+final_ped_time = 0
 
-    if not obj.is_dropped:
-        drop_in_front = False
+#things to keep track of during entire program
+car_list = []
+person_list = []
+car_count = 0
 
-        #If the car is in its intended drop off location and it hasn't dropped and it isn't dropping
-        if(not obj.in_progress):  
-            obj.stop(True)
-            obj.final_time = (pygame.time.get_ticks() / 1000) + obj.wait_time
-            obj.in_progress = True
-
-        current_time = pygame.time.get_ticks() / 1000
-        if current_time < obj.final_time:
-            current_time = pygame.time.get_ticks() / 1000
-            obj.stop(True)
-
-        else:
-            obj.is_dropped = False
-            
-    return
-
-#make sure cars do not spawn and overlap
-def spawn_detect():
-        car_spawn_bool = True
-        for width in range(0, 100):
-            for height in range(0, 50):
-                spawn_value = screen.get_at(( (1200 + width) , (650 + height) ))
-                if spawn_value == RED:
-                    car_spawn_bool = False
-                    break
-
-        return car_spawn_bool
 
 class Car:
     """
@@ -108,6 +84,7 @@ class Car:
         self.is_dropped = False
         self.start=0
         self.final_time =0 
+        self.drop_detect_bool = False
 
         #time to wait for passengers to get out
         self.wait_time = random.randint(10,15)
@@ -175,6 +152,71 @@ class Car:
 
         self.accel+= ACCEL
 
+    def drop_detect(self):
+        self.drop_detct_bool = False
+
+        for z in range(3, INFRONT):
+            detect_val_1 = screen.get_at((int(self.x-z), int(self.y)))
+            detect_val_2 = screen.get_at((int(self.x), int(self.y) + z))
+            if (detect_val_1 == YELLOW) or (detect_val_2 == YELLOW):
+                self.drop_detect_bool = True
+
+        return self.drop_detect_bool
+
+
+
+def obj_drop_off(obj):
+
+    if not obj.is_dropped:
+        drop_in_front = False
+
+        #If the car is in its intended drop off location and it hasn't dropped and it isn't dropping
+        if(not obj.in_progress):  
+            obj.stop(True)
+            obj.final_time = (pygame.time.get_ticks() / 1000) + obj.wait_time
+            obj.in_progress = True
+
+        current_time = pygame.time.get_ticks() / 1000
+        if current_time < obj.final_time:
+            current_time = pygame.time.get_ticks() / 1000
+            obj.stop(True)
+
+        else:
+            obj.is_dropped = False
+            
+    return
+
+#make sure cars do not spawn and overlap
+def spawn_detect(x, y):
+    car_spawn_bool = True
+    #ped_spawn_bool = True
+
+    #if object == "car":
+    for width in range(0, 100):
+        for height in range(0, 50):
+            spawn_value = screen.get_at(( (x + width) , (y + height) ))
+            if spawn_value == RED:
+                car_spawn_bool = False
+                break
+                    #return car_spawn_bool
+    '''
+    elif object == "pedestrian":
+        for width in range(-50, 50):
+            for height in range(-50, 50):
+                spawn_value = screen.get_at(( (x + width) , (y + height) ))
+                if spawn_value == GREEN:
+                    ped_spawn_bool = False
+                    break
+                    #return ped_spawn_bool
+
+    #1200, 650
+    if object == "car":
+        return car_spawn_bool
+
+    elif object == "pedestrian":
+        return ped_spawn_bool
+    '''
+    return car_spawn_bool
 
 class Person:
     """
@@ -194,6 +236,29 @@ class Person:
     def stop(self):
         self.speed = 0
  
+def pedestrian_spawner(wait, allow):
+    global final_ped_time
+    
+    get_time = True
+    ped_current_time = pygame.time.get_ticks() / 1000
+    start_spawning = False
+    
+    if (int(ped_current_time) % wait) == 0:
+      
+        if get_time:
+            start_ped_time = pygame.time.get_ticks() / 1000
+            final_ped_time = start_ped_time + allow
+            start_spawning = True
+            get_time = False
+
+    if (ped_current_time < final_ped_time) and start_spawning:
+        person = make_person()
+        person_list.append(person)
+        ped_current_time = pygame.time.get_ticks() / 1000
+
+    start_spawning = False
+    return
+
 def make_car():
     """
     Function to make a new, random car.
@@ -228,6 +293,13 @@ def make_person():
  
 def main():
 
+    #rint("input 0 and 0 for no pedestrians, else enter numbers (first entry should be bigger than second)")
+    #input_ped_wait = int(input("how long of an interval between pedestrians walking across? "))
+    #input_ped_allow = int(input("how long for the flow of pedestrians after interval? "))
+    #fix this input later
+    input_ped_wait = 20
+    input_ped_allow = 3
+
     pygame.init()
     pygame.display.set_caption("PHS Car Traffic")
  
@@ -238,10 +310,6 @@ def main():
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
  
-    car_list = []
-    person_list = []
-    car_count = 0
-
     #make first car and person
     car = make_car()
     car_list.append(car)
@@ -249,7 +317,7 @@ def main():
     person_list.append(first_cross)
 
     #pedestrian spawn variables (for interval purposes)
-    my_seconds = 0
+    #my_seconds = 0
     start_seconds = 0
     start_seconds_bool = True
     end_seconds = 0
@@ -289,51 +357,16 @@ def main():
                 person = make_person()
                 person_list.append(person)
         
+        #spawner logic
 
         #view finding of rectangle to make sure nearest car is out of area to prepare for spawn
         #check if random match and there is a car within rectangular area of start
         
-        if ((random.randint(1, RANDOMPARAM)) == 3) and spawn_detect():
+        if ((random.randint(1, RANDOMPARAM)) == 3) and spawn_detect(1200, 650):
             car = make_car()
             car_list.append(car)
         
-
-        ped_current_time = pygame.time.get_ticks() / 1000
-        
-        #random pedestrian spawn TO EDIT
-        person_time = int((pygame.time.get_ticks() / 1000))
-        time_mod = person_time % 10
-        person_counter = 0
-        
-        person_spawn_bool = True
-        for search in range(0, 30):
-            spawn_value_left = screen.get_at(( (260 - search) , (500)))
-            spawn_value_top = screen.get_at((804, (245 - search)))
-            if spawn_value_left == GREEN or spawn_value_top == GREEN:
-                person_spawn_bool = False
-                break
-            
-        if ped_current_time % 60 > -0.1 and ped_current_time % 60 < 0.1:
-            Ped_walk_bool = True
-            print("yes")
-        
-        if Ped_walk_bool == True and ped_time == False:                         
-            # If its been 60 seconds, start timer
-            start_ped_time = pygame.time.get_ticks() / 1000
-            ped_time = True
-            print(start_ped_time)
-            print("^ is the start time")
-       
-        elif ped_time and ped_current_time < start_ped_time + 10:       
-        #Timer running and less than 10 seconds...change the 10 to be a variable
-            person = make_person()
-            person_list.append(person)
-       
-        elif ped_time and ped_current_time > start_ped_time + 10:       
-        #Timer running and its been more than 10 seconds
-            Ped_walk_bool = False
-            ped_time = False
-              
+        pedestrian_spawner(input_ped_wait,input_ped_allow)
  
         # --- car logic
         for car in car_list:
@@ -349,13 +382,8 @@ def main():
             #see if car is on top side, will go horizontal left 
             elif car.x > 155 and car.y < 100:
                 drop_bool = (int(car.x)==car.drop_x) or (int(car.x-1) == car.drop_x)
-                drop_detect = False
-                for z in range(3, INFRONT):
-                    detect_val = screen.get_at((int(car.x-INFRONT), int(car.y)))
-                    if detect_val == YELLOW:
-                        drop_detect = True
-
-                if drop_bool or (detect_val == YELLOW and (car.x > 150 and car.x < 500)):
+                should_drop_now = car.drop_detect()
+                if drop_bool or (should_drop_now and (car.x > 150 and car.x < 500)):
                     obj_drop_off(car)
                 
                 car.detect("top")
@@ -366,13 +394,8 @@ def main():
             #see if car is on left side, will go vertical down
             elif car.x < 156 and car.y > 90:
                 drop_bool = (int(car.y)==car.drop_y) or (int(car.y-1) == car.drop_y)
-                drop_detect = False
-                for z in range(3, INFRONT):
-                    detect_val = screen.get_at((int(car.x), int(car.y) + INFRONT))
-                    if detect_val == YELLOW:
-                        drop_detect = True
-
-                if drop_bool or (drop_detect and (car.y > 150 and car.y < 350)):
+                should_drop_now = car.drop_detect()
+                if drop_bool or (should_drop_now and (car.y > 150 and car.y < 350)):
                     obj_drop_off(car)
                 
                 car.detect("left")
@@ -404,10 +427,19 @@ def main():
                     done = True
                 
         #pedestrian logic
+      
+             
+
         for person in person_list:
 
             person_bool = True
-
+            
+            #ped_spawn_1 = spawn_detect(260, 500, "pedestrian")
+            #ped_spawn_2 = spawn_detect(810, 250, "pedestrian")
+            #print(ped_spawn_1 or ped_spawn_2)
+            #if ped_spawn_1 or ped_spawn_2:
+                #print("in")
+           
             #person coming from top leg
             if person.personal_value == 0:
                 for y in range(10,20):
@@ -494,10 +526,15 @@ def main():
         #f = open("text.txt", "a+")
 
         #various hundred car trials below
-        #f.write("\nthis is first go")
-        f.write("Time Elapsed for 100 Cars, No Pedestrians")
-        #write in the date or something else as well
+        if input_ped_allow == 0 and input_ped_wait == 0:
+            f.write("Time Elapsed for 100 Cars, No Pedestrians")
+        
+
+        #do this one later
         #f.write("Time Elapsed for 100 Cars, Randomly Spawned Pedestrians")
+        
+        else:
+            body_text = "Time Elapsed for 100 Cars, %s seconds pedestrian flow, %s seconds interval between flow" %input_ped_allow %input_ped_wait
         #f.write("Time Elapsed for 100 Cars, Pedestrians in 10 Second Intervals")
         #f.write("Time Elapsed for 100 Cars, Pedestrians in 20 Second Intervals")
         #f.write("Time Elapsed for 100 Cars, Pedestrians in 30 Second Intervals")
