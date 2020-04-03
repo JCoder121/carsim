@@ -1,0 +1,7 @@
+
+Time Elapsed for Hundred Cars, No Pedestrians
+
+seconds needed for all cars to pass: 
+4
+
+~~
