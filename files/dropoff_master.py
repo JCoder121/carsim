@@ -60,7 +60,6 @@ final_ped_time = 0
 #things to keep track of during entire program
 car_list = []
 person_list = []
-car_count = 0
 
 
 class Car:
@@ -117,9 +116,10 @@ class Car:
                     detect_value = screen.get_at((int(self.x)+sweep, int(self.y)+infront)) 
 
             #car detection for red, green and yellow    
-        if (detect_value==RED) or (detect_value==GREEN) or (detect_value==YELLOW):
-            self.accel_bool = False
-            self.stop(False)
+            if (detect_value==RED) or (detect_value==GREEN) or (detect_value==YELLOW):
+                self.accel_bool = False
+                self.stop(False)
+                return self.accel_bool
 
         else:
             self.accel_bool = True
@@ -159,13 +159,14 @@ class Car:
         self.accel+= ACCEL
 
     def drop_detect(self):
-        self.drop_detct_bool = False
+        self.drop_detect_bool = False
 
         for z in range(3, INFRONT):
-            detect_val_1 = screen.get_at((int(self.x-z), int(self.y)))
-            detect_val_2 = screen.get_at((int(self.x), int(self.y) + z))
-            if (detect_val_1 == YELLOW) or (detect_val_2 == YELLOW):
-                self.drop_detect_bool = True
+            for sweep in range(-10, 10):
+                detect_val_1 = screen.get_at((int(self.x-z), int(self.y+sweep)))
+                detect_val_2 = screen.get_at((int(self.x+sweep), int(self.y) + z))
+                if (detect_val_1 == YELLOW) or (detect_val_2 == YELLOW):
+                    self.drop_detect_bool = True
 
         return self.drop_detect_bool
 
@@ -312,6 +313,7 @@ def main():
     # Loop until the user clicks the close button.
     done = False
     hundred_cars_bool = False
+    car_count = 0
  
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
@@ -385,22 +387,28 @@ def main():
 
             #see if car is on top side, will go horizontal left 
             elif car.x > 155 and car.y < 100:
+                car.detect("top")
+
                 drop_bool = (int(car.x)==car.drop_x) or (int(car.x-1) == car.drop_x)
                 should_drop_now = car.drop_detect()
                 if drop_bool or (should_drop_now and (car.x > 150 and car.x < 500)):
                     obj_drop_off(car)
+                    #cancel the car drop y value if it had it but dropped early
+                    car.drop_y = None
                 
-                car.detect("top")
+                
                 
                 
             #see if car is on left side, will go vertical down
             elif car.x < 156 and car.y > 90:
+                car.detect("left")
+
                 drop_bool = (int(car.y)==car.drop_y) or (int(car.y-1) == car.drop_y)
                 should_drop_now = car.drop_detect()
                 if drop_bool or (should_drop_now and (car.y > 100 and car.y < 350)):
                     obj_drop_off(car)
                 
-                car.detect("left")
+                
 
                                         
             #get rid of car if it crosses bottom line (memory management)
