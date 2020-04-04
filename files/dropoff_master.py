@@ -125,7 +125,7 @@ class Car:
             self.accel_bool = True
             self.accelerate(location)
 
-                #return (self.accel_bool)   
+        return (self.accel_bool)   
 
 
     def accelerate(self, location):
