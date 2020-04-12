@@ -244,7 +244,7 @@ class Person:
     def stop(self):
         self.speed = 0
  
-def pedestrian_spawner(wait, allow,obj):
+def pedestrian_spawner(wait, allow):
     global final_ped_time
     
     get_time = True
@@ -269,7 +269,7 @@ def pedestrian_spawner(wait, allow,obj):
 
 def traffic_signal(wait):       #Decreases the amount and general possibility of an overlay between the pedestrian and the car
     current_time = pygame.time.get_ticks() / 1000
-    if (int(current_time) % wait >= 1 and int(current_time)%wait <=3.5):
+    if (int(current_time) % wait >= 1 and int(current_time)%wait <=4):
         pygame.draw.rect(screen, GREEN, (660, 30, 10, 150))
         pygame.draw.rect(screen, GREEN, (80,430, 150,10))
     if(int(current_time) % wait >=0 and int(current_time)%wait<=1):
@@ -386,7 +386,7 @@ def main():
             car = make_car()
             car_list.append(car)
         
-        pedestrian_spawner(input_ped_wait,input_ped_allow,car)
+        pedestrian_spawner(input_ped_wait,input_ped_allow)
         traffic_signal(input_ped_wait)
  
         # --- car logic
@@ -525,14 +525,14 @@ def main():
     # Close everything
     pygame.quit()
     if hundred_cars_bool:
-        body_print = "\n\nMinutes needed for 100 cars to pass: " + str(float(total_seconds/60)) + " with wait time between 10 and 15 seconds"
+        body_print = ("\n\nMinutes needed for 100 cars to pass: %0.02f +  with wait time between 10 and 15 seconds" % (float(total_seconds/60)))
         print(body_print)
 
         real_time = strftime("%Y-%m-%d %H-%M-%S", gmtime())
-        save_path = "/Users/Anirudh/Documents"
+        save_path = "/Users/Anirudh/Desktop/Programming/Traffic_Simulation/Raw_Data"
         #save_path = "/Users/jeffrey/Documents/Github/carsim/files/testing_current"
     
-        filestring = "rawdata- " + str(real_time) + ".txt"
+        filestring = str(input_ped_wait) + "second wait"+ ".txt"
         complete_name = os.path.join(save_path, filestring)
         
         f = open(complete_name, "a+")
