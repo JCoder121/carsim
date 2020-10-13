@@ -1,4 +1,7 @@
 # car simulation for traffic
+
+worked with Anirudh Chaudhary @AnirudhChaudhary
+
 testing pull request method instead of colaboratory
 
 9/15/19:
